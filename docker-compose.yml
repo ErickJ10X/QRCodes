@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_USER: ${DB_USER:-qrcode}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-      POSTGRES_DB: ${DB_NAME:-qrcode_db}
+      POSTGRES_DB: ${DB_NAME:-qrcode}
       PGTZ: 'UTC'
     ports:
       - '${DB_PORT:-5432}:5432'
@@ -58,7 +58,7 @@ services:
         condition: service_healthy
     environment:
       # Database
-      DATABASE_URL: postgresql://${DB_USER:-qrcode}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-qrcode_db}
+      DATABASE_URL: postgresql://${DB_USER:-qrcode}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-qrcode}
 
       # Redis
       REDIS_HOST: redis

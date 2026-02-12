@@ -1,0 +1,55 @@
+# ============================================================================
+# STAGE 1: Builder - Compilar aplicación
+# ============================================================================
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+ARG NODE_ENV=production
+
+COPY package*.json ./
+COPY tsconfig*.json ./
+COPY nest-cli.json ./
+
+# Instalar solo dependencias de producción
+RUN npm ci --only=production && \
+    npm run build
+
+# ============================================================================
+# STAGE 2: Runtime - Imagen final optimizada para producción
+# ============================================================================
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Variables de entorno para producción
+ENV NODE_ENV=production
+
+# Instalar dumb-init para manejo correcto de señales
+RUN apk add --no-cache dumb-init && \
+    npm cache clean --force
+
+# Copiar solo lo necesario del builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package*.json ./
+
+# Crear usuario no-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nestjs -u 1001 && \
+    chown -R nestjs:nodejs /app && \
+    mkdir -p /app/logs && \
+    chown -R nestjs:nodejs /app/logs
+
+USER nestjs
+
+EXPOSE 3000
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+
+# PID 1 para propagación correcta de señales
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/main.js"]

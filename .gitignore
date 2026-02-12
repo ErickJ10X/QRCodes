@@ -55,6 +55,7 @@ prisma/migrations/**
 !prisma/migrations/.gitkeep
 
 # Package managers
+bun.lock
 bun.lockb
 yarn.lock
 pnpm-lock.yaml

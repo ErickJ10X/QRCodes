@@ -3,6 +3,7 @@
 **Propósito:** guía de convenciones y operaciones; referencia para tomar decisiones y mantener coherencia.
 
 **Contexto del proyecto**
+
 - Stack: NestJS (feature-based modules), Prisma + PostgreSQL, Redis, Docker.
 - Requerimientos clave: generación de QR, usuarios, autenticación, analytics y cache.
 - Decisiones acordadas: estructura por features y uso de `bcrypt` para hashing.
@@ -10,6 +11,7 @@
 ---
 
 ## Índice (rápido)
+
 1. Visión general
 2. Estructura y convenciones
 3. Módulos del sistema (resumen por feature)
@@ -24,9 +26,11 @@
 ---
 
 ## 1. Visión general
+
 El backend ofrece APIs para crear/gestionar QR codes, autenticación de usuarios, registro de escaneos y reporting. Debe ser seguro, testable y fácil de extender.
 
 ## 2. Estructura y convenciones
+
 - Principio: Feature-based modules. Cada módulo agrupa controller, service, dto, repository/adapter y tipos.
 - Carpetas principales:
   - `src/core/` — proveedores globales (Prisma, Logger, Config, ErrorFilter).
@@ -38,6 +42,7 @@ El backend ofrece APIs para crear/gestionar QR codes, autenticación de usuarios
   - Classes: PascalCase; files: kebab-case.
 
 ## 3. Módulos del sistema (resumen)
+
 - `Auth` — login, refresh tokens, strategies. Protege rutas con JwtGuard y RolesGuard.
 - `Users` — CRUD de usuarios, gestión de perfiles, roles y cambio de contraseña.
 - `QrCodes` — crear, listar, actualizar, eliminar, descargar (PNG/SVG), almacenar metadatos.
@@ -46,12 +51,14 @@ El backend ofrece APIs para crear/gestionar QR codes, autenticación de usuarios
 - `Health` — readiness / liveness checks (DB, Redis).
 
 ## 4. Datos y Prisma
+
 - `PrismaService` en `core/` como singleton inyectable.
 - Recomendación: repository/adapter por módulo que encapsule acceso Prisma (p. ej. `UsersRepository`).
 - Migrations controladas: `migrate dev` en desarrollo y `migrate deploy` en CI.
 - Seeds para dev/test: `prisma/seed.ts` activado por env var.
 
 ## 5. Seguridad y autenticación
+
 - Hasheo: `bcrypt` (configurar salt rounds por `BCRYPT_ROUNDS` en env). Recomendado 10-12 en dev.
 - Tokens: JWT para access tokens cortos; refresh tokens persistidos en BD y revocables.
 - No exponer campos sensibles; usar DTOs de respuesta.
@@ -59,21 +66,25 @@ El backend ofrece APIs para crear/gestionar QR codes, autenticación de usuarios
 - Helmet y CORS configurables en `main.ts`.
 
 ## 6. Observabilidad y operaciones
+
 - Logging estructurado (Winston/Pino) con metadata útil (requestId, userId).
 - Health endpoints: DB y Redis checks.
 - Métricas básicas para eventual Prometheus.
 - Backups y políticas de retención para analytics y logs.
 
 ## 7. Testing
+
 - Unit: mockear repositories/Prisma; tests para services y pipes/guards.
 - E2E: usar base de datos de prueba (docker-compose o DB dedicada) y fixtures limpias.
 - Helpers: `test/utils` con factories y mocks comunes.
 
 ## 8. CI / Deployment
+
 - Pipeline mínimo: `npm ci` → `npx prisma generate` → `npm run lint` → `npm run test -- --coverage` → `npm run build` → `npx prisma migrate deploy`.
 - Mantener secrets en el proveedor CI y aplicar migrations en staging/prod desde pipeline.
 
 ## 9. Checklist por módulo (plantilla)
+
 - [ ] Controller, Service, Repository/Adapter presentes.
 - [ ] DTOs: Create/Update/Response con `class-validator`.
 - [ ] Tests unitarios y e2e básicos.
@@ -81,6 +92,7 @@ El backend ofrece APIs para crear/gestionar QR codes, autenticación de usuarios
 - [ ] Documentación mínima en `docs/` o swagger tags.
 
 ## 10. Comandos y flujo de trabajo
+
 - Crear rama: `git checkout -b feat/<descripcion>`
 - Instalar dependencias clave: `npm install @prisma/client bcrypt class-validator class-transformer`
 - Prisma dev: `npx prisma migrate dev --name <migration>` y `npx prisma generate`
@@ -88,18 +100,54 @@ El backend ofrece APIs para crear/gestionar QR codes, autenticación de usuarios
 
 ---
 
-Decisiones abiertas para closure en PR de arquitectura:
-- Salt rounds de bcrypt exactos para producción.
-- Soft delete vs hard delete en recursos críticos.
-- Políticas de retención de analytics/logs.
+### Anexo: Convenciones y checklist para `UsersModule`
 
-Si quieres, añado un anexo reducido con checklist y convenciones específicas por `UsersModule` y `QrCodesModule` dentro de este mismo archivo. ¿Lo dejo aquí o lo añado ahora? 
-│   └── migrate.sh
+- Archivos mínimos en `src/modules/users/`:
+  - `users.module.ts` (exports: `UsersService`)
+  - `users.controller.ts`
+  - `users.service.ts`
+  - `repositories/users.repository.ts` (Prisma adapter)
+  - `dto/create-user.dto.ts`
+  - `dto/update-user.dto.ts`
+  - `dto/user-response.dto.ts`
+
+- DTOs: campos y validaciones recomendadas
+  - `CreateUserDto`:
+    - `email: string` — `@IsEmail()`, `@IsNotEmpty()`
+    - `password: string` — `@IsString()`, `@MinLength(8)`, `@MaxLength(128)` (opcional: regex para complexity)
+    - `firstName: string` — `@IsString()`, `@Length(1,50)`
+    - `lastName?: string` — `@IsOptional()`, `@IsString()`, `@MaxLength(50)`
+    - `role?: UserRole` — `@IsOptional()`, `@IsEnum(UserRole)` (control de asignación desde service/guards, no permitir role arbitrario en registro público)
+
+  - `UpdateUserDto`:
+    - Extiende `PartialType(CreateUserDto)` (o declarar campos con `@IsOptional()`): permite cambios parciales de `firstName`, `lastName`, `email` (si cambias email, verificar unicidad en service).
+
+  - `UserResponseDto`:
+    - `id: string`, `email: string`, `firstName: string`, `lastName?: string`, `role: UserRole`, `isActive: boolean`, `createdAt: Date`, `updatedAt: Date`.
+    - NUNCA incluir `password` ni `passwordHash`.
+
+- Consideraciones adicionales:
+  - Verificar unicidad de `email` en `UsersService` y lanzar `ConflictException` si ya existe (no validar contra DB en DTO).
+  - Hashear contraseña en `UsersService` con `bcrypt.hash(password, Number(process.env.BCRYPT_ROUNDS||10))` antes de persistir.
+  - Si quieres `confirmPassword` en registro, validar igualdad con un custom validator (o hacerlo en service antes de crear).
+  - Para respuestas, usar DTOs o `@Exclude()` de `class-transformer` para remover campos sensibles.
+
+- Comandos recomendados para crear archivos (opcional, genera clases vacías con Nest CLI):
+
+```bash
+npx nest g class modules/users/dto/create-user.dto --no-spec
+npx nest g class modules/users/dto/update-user.dto --no-spec
+npx nest g class modules/users/dto/user-response.dto --no-spec
+```
+
+---
+
+│ └── migrate.sh
 │
-├── docs/                            # 📚 Documentación
-│   ├── API.md
-│   ├── TESTING.md
-│   └── DEPLOYMENT.md
+├── docs/ # 📚 Documentación
+│ ├── API.md
+│ ├── TESTING.md
+│ └── DEPLOYMENT.md
 │
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
@@ -111,7 +159,8 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
 ├── tsconfig.json
 ├── tsconfig.build.json
 └── README.md
-```
+
+````
 
 ### 📝 Explicación de Estructura
 
@@ -181,11 +230,12 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
   };
   expiresIn: number;
 }
-```
+````
 
 ### 2️⃣ **UsersModule** - Gestión de Usuarios
 
 **Responsabilidades:**
+
 - CRUD de usuarios
 - Perfil del usuario actual
 - Cambio de contraseña
@@ -193,6 +243,7 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
 - Eliminación de usuarios
 
 **DTOs Principales:**
+
 ```typescript
 // CreateUserDto
 {
@@ -224,6 +275,7 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
 ### 3️⃣ **QrCodesModule** - Generación y Gestión de QR
 
 **Responsabilidades:**
+
 - Crear nuevos QR codes
 - Listar QR codes del usuario
 - Obtener detalles de un QR
@@ -232,11 +284,13 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
 - Descargar QR en diferentes formatos
 
 **Servicios internos:**
+
 - `QrCodesService`: Lógica de negocio
 - `QrGeneratorService`: Generación física del QR
 - `QrCodesRepository`: Acceso a datos
 
 **DTOs Principales:**
+
 ```typescript
 // CreateQrDto
 {
@@ -277,12 +331,14 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
 ### 4️⃣ **AnalyticsModule** - Estadísticas de Escaneo
 
 **Responsabilidades:**
+
 - Registrar escaneos de QR
 - Obtener estadísticas por QR
 - Dashboard de usuario
 - Estadísticas globales (solo admin)
 
 **DTOs Principales:**
+
 ```typescript
 // RecordScanDto
 {
@@ -307,12 +363,14 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
 ### 5️⃣ **CacheModule** - Gestión de Cache
 
 **Responsabilidades:**
+
 - Almacenar QR codes frecuentes
 - Caché de usuarios
 - Gestión de sesiones de token
 - TTL automático
 
 **Métodos:**
+
 - `get(key: string)`
 - `set(key: string, value: any, ttl?: number)`
 - `del(key: string)`
@@ -321,6 +379,7 @@ Si quieres, añado un anexo reducido con checklist y convenciones específicas p
 ### 6️⃣ **HealthModule** - Monitoreo
 
 **Responsabilidades:**
+
 - Verificar salud de la BD
 - Verificar salud de Redis
 - Endpoint de healthcheck
@@ -631,7 +690,7 @@ graph TD
     J --> K[Guardar refresh token en BD]
     K --> L[Guardar en Redis con TTL]
     L --> M[Retornar tokens al usuario]
-    
+
     M --> N[Usuario almacena tokens]
     N -->|Next request con Bearer token| O[JwtGuard]
     O --> P{Token válido?}
@@ -747,7 +806,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload) {
     const user = await this.usersService.findById(payload.sub);
-    
+
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Usuario no válido o inactivo');
     }
@@ -778,7 +837,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
   async validate(email: string, password: string): Promise<any> {
     const user = await this.authService.validateUser(email, password);
-    
+
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
@@ -893,7 +952,7 @@ graph TD
     L --> M[Guardar en BD]
     M --> N[Guardar en Cache Redis]
     N --> O[Retornar QrResponseDto]
-    
+
     style D fill:#ff6b6b
     style H fill:#ff6b6b
 ```
@@ -911,7 +970,7 @@ graph TD
     G --> H[Continuar request]
     H --> I[Procesar lógica]
     I --> J[Responder al cliente]
-    
+
     style F fill:#ff6b6b
 ```
 
@@ -925,9 +984,9 @@ graph TD
     C -->|No| E[Consultar BD]
     E --> F[Guardar en cache con TTL]
     F --> G[Retornar al cliente]
-    
+
     D --> H[Incrementar hit rate]
-    
+
     style H fill:#51cf66
 ```
 
@@ -955,7 +1014,7 @@ services:
       POSTGRES_DB: ${DB_NAME:-qrcode_db}
       PGTZ: 'UTC'
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - '${DB_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
@@ -976,7 +1035,7 @@ services:
     container_name: qr-redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis123}
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data:/data
     healthcheck:
@@ -1004,27 +1063,27 @@ services:
     environment:
       # Base de datos
       DATABASE_URL: postgresql://${DB_USER:-qrcode}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-qrcode_db}
-      
+
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
-      
+
       # JWT
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-3600}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800}
-      
+
       # Aplicación
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-3000}
       APP_NAME: ${APP_NAME:-QR Code Generator}
       APP_VERSION: ${APP_VERSION:-1.0.0}
-      
+
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-debug}
     ports:
-      - "${PORT:-3000}:3000"
+      - '${PORT:-3000}:3000'
     volumes:
       - ./src:/app/src
       - ./prisma:/app/prisma
@@ -1044,7 +1103,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     ports:
-      - "${PGADMIN_PORT:-5050}:80"
+      - '${PGADMIN_PORT:-5050}:80'
     networks:
       - qr-network
     depends_on:
@@ -1060,7 +1119,7 @@ services:
     environment:
       - REDIS_HOSTS=local:redis:6379:0:${REDIS_PASSWORD:-redis123}
     ports:
-      - "${REDIS_COMMANDER_PORT:-8081}:8081"
+      - '${REDIS_COMMANDER_PORT:-8081}:8081'
     networks:
       - qr-network
     depends_on:
@@ -1368,7 +1427,9 @@ import { CacheModuleOptions } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { ConfigService } from '@nestjs/config';
 
-export const redisConfig = (configService: ConfigService): CacheModuleOptions => ({
+export const redisConfig = (
+  configService: ConfigService,
+): CacheModuleOptions => ({
   isGlobal: true,
   store: redisStore,
   host: configService.get('REDIS_HOST'),
@@ -1546,8 +1607,9 @@ export class AuthService {
 
   private async generateAuthResponse(user: any): Promise<AuthResponseDto> {
     const accessToken = this.generateAccessToken(user);
-    const { token: refreshToken, expiresAt } =
-      await this.generateRefreshToken(user.id);
+    const { token: refreshToken, expiresAt } = await this.generateRefreshToken(
+      user.id,
+    );
 
     return {
       accessToken,
@@ -1569,7 +1631,8 @@ export class AuthService {
       email: user.email,
       role: user.role,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) +
+      exp:
+        Math.floor(Date.now() / 1000) +
         this.configService.get('JWT_EXPIRATION'),
     };
 
@@ -1731,8 +1794,8 @@ export class QrCodesController {
 
     const buffer = await this.qrCodesService.downloadQr(id, user.id, format);
 
-    const contentType = format.toLowerCase() === 'png' ?
-      'image/png' : 'image/svg+xml';
+    const contentType =
+      format.toLowerCase() === 'png' ? 'image/png' : 'image/svg+xml';
 
     res.setHeader('Content-Type', contentType);
     res.setHeader(
@@ -1747,10 +1810,7 @@ export class QrCodesController {
    * GET /qr-codes/:id/stats
    */
   @Get(':id/stats')
-  async getStats(
-    @Param('id') id: string,
-    @CurrentUser() user: User,
-  ) {
+  async getStats(@Param('id') id: string, @CurrentUser() user: User) {
     return this.qrCodesService.getStats(id, user.id);
   }
 
@@ -1799,9 +1859,19 @@ export class QrCodesService {
     private qrRepository: QrCodesRepository,
   ) {}
 
-  async create(userId: string, createQrDto: CreateQrDto): Promise<QrResponseDto> {
-    const { targetUrl, title, description, format, size, errorCorrection, tags } =
-      createQrDto;
+  async create(
+    userId: string,
+    createQrDto: CreateQrDto,
+  ): Promise<QrResponseDto> {
+    const {
+      targetUrl,
+      title,
+      description,
+      format,
+      size,
+      errorCorrection,
+      tags,
+    } = createQrDto;
 
     // Validar URL
     try {
@@ -1843,11 +1913,7 @@ export class QrCodesService {
     }
 
     // Guardar en cache
-    await this.cacheService.set(
-      `qr:${qrCode.id}`,
-      qrCode,
-      this.QR_CACHE_TTL,
-    );
+    await this.cacheService.set(`qr:${qrCode.id}`, qrCode, this.QR_CACHE_TTL);
 
     return this.mapToResponseDto(qrCode);
   }
@@ -1875,7 +1941,7 @@ export class QrCodesService {
     ]);
 
     return {
-      data: data.map(qr => this.mapToResponseDto(qr)),
+      data: data.map((qr) => this.mapToResponseDto(qr)),
       total,
       page,
       limit,
@@ -1902,11 +1968,7 @@ export class QrCodesService {
     }
 
     // Guardar en cache
-    await this.cacheService.set(
-      `qr:${id}`,
-      qrCode,
-      this.QR_CACHE_TTL,
-    );
+    await this.cacheService.set(`qr:${id}`, qrCode, this.QR_CACHE_TTL);
 
     return this.mapToResponseDto(qrCode);
   }
@@ -1951,7 +2013,11 @@ export class QrCodesService {
     return this.mapToResponseDto(updated);
   }
 
-  async downloadQr(id: string, userId: string, format: string): Promise<Buffer> {
+  async downloadQr(
+    id: string,
+    userId: string,
+    format: string,
+  ): Promise<Buffer> {
     const qrCode = await this.getQrCodeAndVerifyOwnership(id, userId);
 
     const base64Data = qrCode.qrData.toString();
@@ -2070,9 +2136,7 @@ export class QrGeneratorService {
 
       throw new BadRequestException('Formato no soportado');
     } catch (error) {
-      throw new BadRequestException(
-        `Error generando QR: ${error.message}`,
-      );
+      throw new BadRequestException(`Error generando QR: ${error.message}`);
     }
   }
 }
@@ -2138,6 +2202,7 @@ export class QrCodesRepository {
 ### 📋 Fase 1: Configuración Base (Semana 1)
 
 **Objetivos:**
+
 - [ ] Crear estructura de proyecto y carpetas
 - [ ] Configurar Docker y docker-compose
 - [ ] Conectar PostgreSQL y Prisma
@@ -2145,6 +2210,7 @@ export class QrCodesRepository {
 - [ ] Configurar TypeScript y linters
 
 **Entregables:**
+
 - Proyecto NestJS funcionando en Docker
 - Database operacional
 - Migraciones configuradas
@@ -2156,6 +2222,7 @@ export class QrCodesRepository {
 ### 📋 Fase 2: Autenticación (Semana 1-2)
 
 **Objetivos:**
+
 - [ ] Crear UsersModule (CRUD básico)
 - [ ] Implementar AuthModule con JWT
 - [ ] Crear Guards y Decorators
@@ -2163,6 +2230,7 @@ export class QrCodesRepository {
 - [ ] Testing de auth endpoints
 
 **Entregables:**
+
 - `/auth/register` - Registro de usuarios
 - `/auth/login` - Login y token
 - `/auth/refresh` - Refresh token
@@ -2176,6 +2244,7 @@ export class QrCodesRepository {
 ### 📋 Fase 3: QR Codes - CRUD (Semana 2-3)
 
 **Objetivos:**
+
 - [ ] Crear QrCodesModule
 - [ ] Implementar servicio de generación QR
 - [ ] CRUD de QR codes
@@ -2183,6 +2252,7 @@ export class QrCodesRepository {
 - [ ] Paginación y filtros
 
 **Entregables:**
+
 - `POST /qr-codes` - Crear QR
 - `GET /qr-codes` - Listar QRs (paginado)
 - `GET /qr-codes/:id` - Obtener QR
@@ -2196,6 +2266,7 @@ export class QrCodesRepository {
 ### 📋 Fase 4: Cache y Redis (Semana 3)
 
 **Objetivos:**
+
 - [ ] Configurar Redis
 - [ ] Implementar CacheModule
 - [ ] Caché de QR codes
@@ -2203,6 +2274,7 @@ export class QrCodesRepository {
 - [ ] Caché de usuarios
 
 **Entregables:**
+
 - CacheService funcional
 - RateLimitGuard activo
 - Hit rate > 80% en QRs frecuentes
@@ -2214,12 +2286,14 @@ export class QrCodesRepository {
 ### 📋 Fase 5: Analytics (Semana 4)
 
 **Objetivos:**
+
 - [ ] Crear AnalyticsModule
 - [ ] Registrar escaneos
 - [ ] Estadísticas por QR
 - [ ] Dashboard de usuario
 
 **Entregables:**
+
 - `GET /qr-codes/:id/stats` - Estadísticas QR
 - `POST /analytics/scan` - Registrar escaneo
 - Gráficos de escaneos
@@ -2231,6 +2305,7 @@ export class QrCodesRepository {
 ### 📋 Fase 6: Seguridad y Manejo de errores (Semana 4-5)
 
 **Objetivos:**
+
 - [ ] Implementar global exception filter
 - [ ] Validación con class-validator
 - [ ] Logging centralizado
@@ -2238,6 +2313,7 @@ export class QrCodesRepository {
 - [ ] Helmet para headers de seguridad
 
 **Entregables:**
+
 - Respuestas de error consistentes
 - Logs estruturados
 - Headers de seguridad
@@ -2249,6 +2325,7 @@ export class QrCodesRepository {
 ### 📋 Fase 7: Testing y Documentación (Semana 5)
 
 **Objetivos:**
+
 - [ ] Tests unitarios
 - [ ] Tests E2E
 - [ ] Documentación API (Swagger)
@@ -2256,6 +2333,7 @@ export class QrCodesRepository {
 - [ ] Deploy script
 
 **Entregables:**
+
 - Cobertura > 80%
 - Swagger docs completo
 - README actualizado
@@ -2267,6 +2345,7 @@ export class QrCodesRepository {
 ### 📋 Fase 8: Deployment (Semana 5-6)
 
 **Objetivos:**
+
 - [ ] Optimizar Dockerfile
 - [ ] Configurar CI/CD (GitHub Actions)
 - [ ] Scripts de migración
@@ -2274,6 +2353,7 @@ export class QrCodesRepository {
 - [ ] Backup de BD
 
 **Entregables:**
+
 - Deploy automatizado
 - Health checks operacionales
 - Estrategia de backup
@@ -2285,6 +2365,7 @@ export class QrCodesRepository {
 ## 🎯 Checklist Completo
 
 ### Desarrollo
+
 - [ ] Estructura de carpetas creada
 - [ ] Docker y docker-compose funcionando
 - [ ] Base de datos conectada
@@ -2303,6 +2384,7 @@ export class QrCodesRepository {
 - [ ] Guards y Decorators custom
 
 ### Seguridad
+
 - [ ] JWT configurado correctamente
 - [ ] Refresh tokens almacenados
 - [ ] Roles y permisos implementados
@@ -2315,6 +2397,7 @@ export class QrCodesRepository {
 - [ ] Token blacklist si aplica
 
 ### Testing
+
 - [ ] Tests unitarios auth
 - [ ] Tests unitarios qr-codes
 - [ ] Tests E2E completos
@@ -2322,6 +2405,7 @@ export class QrCodesRepository {
 - [ ] CI/CD configurado
 
 ### Documentación
+
 - [ ] README.md completo
 - [ ] ARQUITECTURA.md (este documento)
 - [ ] API.md con Swagger
@@ -2330,6 +2414,7 @@ export class QrCodesRepository {
 - [ ] Seeding script
 
 ### DevOps
+
 - [ ] Dockerfile optimizado
 - [ ] docker-compose.yml completo
 - [ ] .env.example completado
@@ -2465,12 +2550,14 @@ npm run format                # Formatear con prettier
 ## 🎓 Recursos y Referencias
 
 ### Documentación Oficial
+
 - [NestJS Docs](https://docs.nestjs.com)
 - [Prisma Docs](https://www.prisma.io/docs/)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [Docker Docs](https://docs.docker.com)
 
 ### Librerías Utilizadas
+
 - `qrcode` - Generación de QR codes
 - `bcrypt` - Hashing de contraseñas
 - `passport-jwt` - Estrategia JWT
@@ -2478,6 +2565,7 @@ npm run format                # Formatear con prettier
 - `class-validator` - Validación de DTOs
 
 ### Patrones Implementados
+
 - **Repository Pattern** - Abstracción de acceso a datos
 - **Service Layer** - Lógica de negocio centralizada
 - **Dependency Injection** - IoC container de NestJS
@@ -2492,18 +2580,17 @@ npm run format                # Formatear con prettier
 
 Este documento proporciona una **arquitectura profesional y completa** para construir un sistema de generación de QR codes con NestJS. La estructura está diseñada para ser:
 
-✅ **Escalable** - Preparada para crecer sin refactorizar  
-✅ **Mantenible** - Código limpio y organizado  
-✅ **Segura** - Autenticación, autorización, validación  
-✅ **Performante** - Cache, índices, optimizaciones  
-✅ **Observable** - Logs, monitoring, health checks  
-✅ **Documentada** - Comentarios y guías claras  
+✅ **Escalable** - Preparada para crecer sin refactorizar
+✅ **Mantenible** - Código limpio y organizado
+✅ **Segura** - Autenticación, autorización, validación
+✅ **Performante** - Cache, índices, optimizaciones
+✅ **Observable** - Logs, monitoring, health checks
+✅ **Documentada** - Comentarios y guías claras
 
 El tiempo estimado total de **implementación es de 5-6 semanas** trabajando 4-5 horas diarias de desarrollo dedicado.
 
 ---
 
-**Última actualización:** Febrero 2026  
-**Versión:** 1.0  
+**Última actualización:** Febrero 2026
+**Versión:** 1.0
 **Estado:** Listo para implementación
-

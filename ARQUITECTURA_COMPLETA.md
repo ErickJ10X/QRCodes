@@ -1,203 +1,99 @@
 # 🏗️ Arquitectura Completa: Sistema de Generación de QR Codes con NestJS
 
-**Autor:** Sistema de Arquitectura Senior  
-**Fecha:** Febrero 2026  
-**Versión:** 1.0  
-**Tecnología:** NestJS + PrismaORM + PostgreSQL + Redis + Docker
+**Propósito:** guía de convenciones y operaciones; referencia para tomar decisiones y mantener coherencia.
+
+**Contexto del proyecto**
+- Stack: NestJS (feature-based modules), Prisma + PostgreSQL, Redis, Docker.
+- Requerimientos clave: generación de QR, usuarios, autenticación, analytics y cache.
+- Decisiones acordadas: estructura por features y uso de `bcrypt` para hashing.
 
 ---
 
-## 📋 Índice de Contenidos
-
-1. [Visión General](#visión-general)
-2. [Estructura de Carpetas](#estructura-de-carpetas)
-3. [Arquitectura de Módulos](#arquitectura-de-módulos)
-4. [Diseño de Base de Datos](#diseño-de-base-de-datos)
-5. [Sistema de Autenticación](#sistema-de-autenticación)
-6. [Flujos y Diagramas](#flujos-y-diagramas)
-7. [Configuración de Infraestructura](#configuración-de-infraestructura)
-8. [Archivos de Configuración](#archivos-de-configuración)
-9. [Ejemplos de Código](#ejemplos-de-código)
-10. [Plan de Implementación](#plan-de-implementación)
-11. [Comandos de Inicialización](#comandos-de-inicialización)
+## Índice (rápido)
+1. Visión general
+2. Estructura y convenciones
+3. Módulos del sistema (resumen por feature)
+4. Datos y Prisma (estrategia)
+5. Seguridad y autenticación
+6. Observabilidad y operaciones
+7. Testing
+8. CI / Deployment
+9. Checklist por módulo
+10. Comandos y flujo de trabajo
 
 ---
 
-## 🎯 Visión General
+## 1. Visión general
+El backend ofrece APIs para crear/gestionar QR codes, autenticación de usuarios, registro de escaneos y reporting. Debe ser seguro, testable y fácil de extender.
 
-Este es un backend robusto, escalable y profesional para un sistema de generación y gestión de QR codes. La arquitectura sigue patrones de diseño enterprise reconocidos en la comunidad NestJS.
+## 2. Estructura y convenciones
+- Principio: Feature-based modules. Cada módulo agrupa controller, service, dto, repository/adapter y tipos.
+- Carpetas principales:
+  - `src/core/` — proveedores globales (Prisma, Logger, Config, ErrorFilter).
+  - `src/common/` — utilidades y tipos compartidos (decorators, enums, constants).
+  - `src/modules/` — módulos por feature (`auth`, `users`, `qr-codes`, `analytics`, `cache`, `health`).
+  - `prisma/`, `config/`, `scripts/`, `test/`, `docker/`.
+- Naming:
+  - `users.service.ts`, `users.controller.ts`, `create-user.dto.ts`.
+  - Classes: PascalCase; files: kebab-case.
 
-### Stack Tecnológico
-- **Framework**: NestJS (arquitectura modular y escalable)
-- **Base de Datos**: PostgreSQL (persistencia relacional)
-- **ORM**: PrismaORM (type-safe y migraciones automatizadas)
-- **Cache**: Redis (rendimiento y rate limiting)
-- **Autenticación**: JWT (stateless, escalable)
-- **Containerización**: Docker + Docker Compose
-- **Logging**: Winston (logs estructurados)
-- **Validación**: class-validator + class-transformer
+## 3. Módulos del sistema (resumen)
+- `Auth` — login, refresh tokens, strategies. Protege rutas con JwtGuard y RolesGuard.
+- `Users` — CRUD de usuarios, gestión de perfiles, roles y cambio de contraseña.
+- `QrCodes` — crear, listar, actualizar, eliminar, descargar (PNG/SVG), almacenar metadatos.
+- `Analytics` — registrar escaneos, generar reportes por QR y usuario.
+- `Cache` — wrapper de Redis/CacheManager; TTL y keys estandarizadas.
+- `Health` — readiness / liveness checks (DB, Redis).
 
-### Principios Arquitectónicos
-✅ **Modularidad**: Cada módulo es independiente y reutilizable  
-✅ **Responsabilidad Única**: Controllers, Services, Repositories bien separados  
-✅ **Inyección de Dependencias**: NestJS IoC container  
-✅ **Escalabilidad**: Redis para cache y rate limiting horizontal  
-✅ **Seguridad**: JWT, roles, rate limiting, validación en capas  
-✅ **Observabilidad**: Logs estructurados y manejo de errores centralizado  
+## 4. Datos y Prisma
+- `PrismaService` en `core/` como singleton inyectable.
+- Recomendación: repository/adapter por módulo que encapsule acceso Prisma (p. ej. `UsersRepository`).
+- Migrations controladas: `migrate dev` en desarrollo y `migrate deploy` en CI.
+- Seeds para dev/test: `prisma/seed.ts` activado por env var.
+
+## 5. Seguridad y autenticación
+- Hasheo: `bcrypt` (configurar salt rounds por `BCRYPT_ROUNDS` en env). Recomendado 10-12 en dev.
+- Tokens: JWT para access tokens cortos; refresh tokens persistidos en BD y revocables.
+- No exponer campos sensibles; usar DTOs de respuesta.
+- Rate limiting en endpoints sensibles (login, register, create QR).
+- Helmet y CORS configurables en `main.ts`.
+
+## 6. Observabilidad y operaciones
+- Logging estructurado (Winston/Pino) con metadata útil (requestId, userId).
+- Health endpoints: DB y Redis checks.
+- Métricas básicas para eventual Prometheus.
+- Backups y políticas de retención para analytics y logs.
+
+## 7. Testing
+- Unit: mockear repositories/Prisma; tests para services y pipes/guards.
+- E2E: usar base de datos de prueba (docker-compose o DB dedicada) y fixtures limpias.
+- Helpers: `test/utils` con factories y mocks comunes.
+
+## 8. CI / Deployment
+- Pipeline mínimo: `npm ci` → `npx prisma generate` → `npm run lint` → `npm run test -- --coverage` → `npm run build` → `npx prisma migrate deploy`.
+- Mantener secrets en el proveedor CI y aplicar migrations en staging/prod desde pipeline.
+
+## 9. Checklist por módulo (plantilla)
+- [ ] Controller, Service, Repository/Adapter presentes.
+- [ ] DTOs: Create/Update/Response con `class-validator`.
+- [ ] Tests unitarios y e2e básicos.
+- [ ] Mapeo de errores de DB a HttpExceptions.
+- [ ] Documentación mínima en `docs/` o swagger tags.
+
+## 10. Comandos y flujo de trabajo
+- Crear rama: `git checkout -b feat/<descripcion>`
+- Instalar dependencias clave: `npm install @prisma/client bcrypt class-validator class-transformer`
+- Prisma dev: `npx prisma migrate dev --name <migration>` y `npx prisma generate`
+- Levantar dev: `docker-compose up -d` y `npm run start:dev`
 
 ---
 
-## 📁 Estructura de Carpetas
+Decisiones abiertas para closure en PR de arquitectura:
+- Salt rounds de bcrypt exactos para producción.
+- Soft delete vs hard delete en recursos críticos.
+- Políticas de retención de analytics/logs.
 
-```
-qr-code-generator/
-├── src/
-│   ├── common/                      # 🔧 Código compartido
-│   │   ├── decorators/              # Decoradores personalizados
-│   │   │   ├── is-admin.decorator.ts
-│   │   │   ├── current-user.decorator.ts
-│   │   │   └── rate-limit.decorator.ts
-│   │   ├── filters/                 # Filtros globales de excepciones
-│   │   │   └── http-exception.filter.ts
-│   │   ├── guards/                  # Guards de autenticación y autorización
-│   │   │   ├── jwt.guard.ts
-│   │   │   ├── roles.guard.ts
-│   │   │   └── rate-limit.guard.ts
-│   │   ├── interceptors/            # Interceptores para transformación
-│   │   │   ├── transform.interceptor.ts
-│   │   │   └── logging.interceptor.ts
-│   │   ├── pipes/                   # Pipes personalizados
-│   │   │   └── validation.pipe.ts
-│   │   ├── middleware/              # Middlewares
-│   │   │   └── logger.middleware.ts
-│   │   ├── constants/               # Constantes de aplicación
-│   │   │   ├── auth.constants.ts
-│   │   │   ├── validation.constants.ts
-│   │   │   └── error.constants.ts
-│   │   ├── utils/                   # Funciones utilitarias
-│   │   │   ├── hash.util.ts
-│   │   │   ├── jwt.util.ts
-│   │   │   └── logger.util.ts
-│   │   ├── exceptions/              # Excepciones personalizadas
-│   │   │   ├── app.exception.ts
-│   │   │   ├── auth.exception.ts
-│   │   │   └── qr.exception.ts
-│   │   ├── types/                   # Tipos e interfaces globales
-│   │   │   ├── request.types.ts
-│   │   │   └── response.types.ts
-│   │   ├── enums/                   # Enums globales
-│   │   │   ├── user-role.enum.ts
-│   │   │   └── qr-format.enum.ts
-│   │   └── config/                  # Configuración centralizada
-│   │       ├── database.config.ts
-│   │       ├── redis.config.ts
-│   │       ├── jwt.config.ts
-│   │       └── app.config.ts
-│   │
-│   ├── modules/                     # 📦 Módulos de negocio
-│   │   ├── auth/                    # Módulo de autenticación
-│   │   │   ├── auth.controller.ts
-│   │   │   ├── auth.service.ts
-│   │   │   ├── auth.module.ts
-│   │   │   ├── strategies/
-│   │   │   │   ├── jwt.strategy.ts
-│   │   │   │   └── local.strategy.ts
-│   │   │   ├── dto/
-│   │   │   │   ├── login.dto.ts
-│   │   │   │   ├── register.dto.ts
-│   │   │   │   ├── refresh-token.dto.ts
-│   │   │   │   └── auth-response.dto.ts
-│   │   │   └── interfaces/
-│   │   │       └── jwt-payload.interface.ts
-│   │   │
-│   │   ├── users/                   # Módulo de usuarios
-│   │   │   ├── users.controller.ts
-│   │   │   ├── users.service.ts
-│   │   │   ├── users.module.ts
-│   │   │   ├── repositories/
-│   │   │   │   └── users.repository.ts
-│   │   │   ├── dto/
-│   │   │   │   ├── create-user.dto.ts
-│   │   │   │   ├── update-user.dto.ts
-│   │   │   │   └── user-response.dto.ts
-│   │   │   └── entities/
-│   │   │       └── user.entity.ts
-│   │   │
-│   │   ├── qr-codes/                # Módulo principal de QR codes
-│   │   │   ├── qr-codes.controller.ts
-│   │   │   ├── qr-codes.service.ts
-│   │   │   ├── qr-generator.service.ts
-│   │   │   ├── qr-codes.module.ts
-│   │   │   ├── repositories/
-│   │   │   │   └── qr-codes.repository.ts
-│   │   │   ├── dto/
-│   │   │   │   ├── create-qr.dto.ts
-│   │   │   │   ├── update-qr.dto.ts
-│   │   │   │   ├── qr-response.dto.ts
-│   │   │   │   └── qr-list.dto.ts
-│   │   │   ├── entities/
-│   │   │   │   └── qr-code.entity.ts
-│   │   │   ├── enums/
-│   │   │   │   ├── qr-format.enum.ts
-│   │   │   │   └── qr-status.enum.ts
-│   │   │   └── interfaces/
-│   │   │       ├── qr-generation.interface.ts
-│   │   │       └── qr-metadata.interface.ts
-│   │   │
-│   │   ├── analytics/               # Módulo de estadísticas
-│   │   │   ├── analytics.controller.ts
-│   │   │   ├── analytics.service.ts
-│   │   │   ├── analytics.module.ts
-│   │   │   ├── repositories/
-│   │   │   │   └── analytics.repository.ts
-│   │   │   └── dto/
-│   │   │       └── analytics-response.dto.ts
-│   │   │
-│   │   ├── cache/                   # Módulo de cache
-│   │   │   ├── cache.service.ts
-│   │   │   ├── cache.module.ts
-│   │   │   └── cache.constants.ts
-│   │   │
-│   │   └── health/                  # Módulo de health check
-│   │       ├── health.controller.ts
-│   │       ├── health.module.ts
-│   │       └── indicators/
-│   │           ├── database.indicator.ts
-│   │           └── redis.indicator.ts
-│   │
-│   ├── app.module.ts                # Módulo raíz
-│   ├── app.controller.ts
-│   ├── app.service.ts
-│   ├── main.ts                      # Punto de entrada
-│   └── types/
-│       └── express.d.ts             # Extensiones de tipos Express
-│
-├── prisma/                          # 🗄️ Gestión de BD
-│   ├── schema.prisma
-│   ├── seed.ts                      # Datos de prueba
-│   └── migrations/                  # Historial de migraciones
-│
-├── test/                            # 🧪 Testing
-│   ├── jest.config.ts
-│   ├── auth.e2e.spec.ts
-│   ├── qr-codes.e2e.spec.ts
-│   └── fixtures/
-│       └── test-data.ts
-│
-├── docker/                          # 🐳 Docker
-│   ├── Dockerfile
-│   ├── Dockerfile.prod
-│   └── entrypoint.sh
-│
-├── config/                          # ⚙️ Variables de entorno
-│   ├── .env.example
-│   ├── .env.development
-│   ├── .env.test
-│   └── .env.production
-│
-├── scripts/                         # 🚀 Scripts útiles
-│   ├── init-db.sh
-│   ├── seed-db.sh
+Si quieres, añado un anexo reducido con checklist y convenciones específicas por `UsersModule` y `QrCodesModule` dentro de este mismo archivo. ¿Lo dejo aquí o lo añado ahora? 
 │   └── migrate.sh
 │
 ├── docs/                            # 📚 Documentación

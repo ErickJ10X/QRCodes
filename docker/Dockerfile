@@ -21,7 +21,7 @@ RUN npm run build
 # Remove dev dependencies to reduce final image size
 RUN npm prune --production
 
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 

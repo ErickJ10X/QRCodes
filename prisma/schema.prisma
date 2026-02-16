@@ -27,6 +27,8 @@ model User {
   @@index([email])
   @@index([role])
   @@map("users")
+
+  refreshTokens RefreshToken[]
 }
 
 enum UserRole {
@@ -35,4 +37,19 @@ enum UserRole {
   USER
 
   @@map("user_role")
+}
+
+model RefreshToken {
+  id Int @id @default(autoincrement())
+  userId Int
+  token String @unique
+  expiresAt DateTime
+  isRevoked Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
 }

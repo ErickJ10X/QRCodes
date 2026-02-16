@@ -78,5 +78,6 @@ package-lock.json
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
-ARQUITECTURE_COMPLETA.md
+ARQUITECTURA_COMPLETA.md
 DIAGRAMAS.md
+ARQUITECTURA_COMPLETA.md

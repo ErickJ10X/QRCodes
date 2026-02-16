@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -51,9 +52,9 @@ export class UsersService {
   }
 
   async update(
-    id: string,
+    id: number,
     updateUserDto: UpdateUserDto,
-    currentUserId: string,
+    currentUserId: number,
     isAdmin = false,
   ) {
     if (!isAdmin && currentUserId !== id) {
@@ -90,5 +91,33 @@ export class UsersService {
       }
       throw error;
     }
+  }
+
+  async findAll(args?: Omit<Prisma.UserFindManyArgs, 'select'>) {
+    const users = await this.usersRepository.findMany(args);
+    return plainToInstance(UserResponseDto, users, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async findOne(id: number) {
+    const user = await this.usersRepository.findById(id);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async remove(id: number, currentUserId: number, isAdmin = false) {
+    if (!isAdmin && currentUserId !== id) {
+      throw new ForbiddenException(
+        'No tienes permiso para eliminar este usuario',
+      );
+    }
+
+    const deleted = await this.usersRepository.delete(id);
+    return plainToInstance(UserResponseDto, deleted, {
+      excludeExtraneousValues: true,
+    });
   }
 }

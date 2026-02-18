@@ -7,10 +7,10 @@ import { UsersRepository } from '../users/repositories/users.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { TokenService } from 'src/core/token.service';
 import { LoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { UserRole } from 'src/common/enums/user-role.enum';
 import { IAuthenticatedUser } from 'src/common/interfaces/authenticated-user.interface';
+import { PasswordService } from 'src/core/password.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +18,7 @@ export class AuthService {
     private tokenService: TokenService,
     private usersRepository: UsersRepository,
     private refreshTokenRepository: RefreshTokenRepository,
+    private passwordService: PasswordService,
   ) {}
 
   async login(loginDto: LoginDto) {
@@ -29,7 +30,7 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await this.passwordService.compare(
       loginDto.password,
       user.password,
     );
@@ -60,8 +61,9 @@ export class AuthService {
       throw new ConflictException('El correo ya está registrado');
     }
 
-    const saltRounds = parseInt(process.env['BCRYPT_SALT_ROUNDS'] || '10', 10);
-    const hashedPassword = await bcrypt.hash(registerDto.password, saltRounds);
+    const hashedPassword = await this.passwordService.hash(
+      registerDto.password,
+    );
 
     const newUser = await this.usersRepository.create({
       email: registerDto.email,

@@ -6,15 +6,19 @@ import {
 } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Prisma, UserRole } from 'generated/prisma/client';
+import { Prisma } from 'generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/user-response.dto';
-import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PasswordService } from 'src/core/password.service';
+import { UserRole } from 'src/common/enums/user-role.enum';
 
 @Injectable()
 export class UsersService {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(
+    private usersRepository: UsersRepository,
+    private passwordService: PasswordService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.usersRepository.findByEmail(
@@ -22,9 +26,8 @@ export class UsersService {
     );
     if (existingUser) throw new ConflictException('Email ya registrado');
 
-    const hashedPassword = await bcrypt.hash(
+    const hashedPassword = await this.passwordService.hash(
       createUserDto.password,
-      parseInt(process.env['BCRYPT_SALT_ROUNDS'] || '10'),
     );
 
     const userdata: Prisma.UserCreateInput = {
@@ -71,9 +74,8 @@ export class UsersService {
     if (isAdmin && updateUserDto.email !== undefined)
       data.email = updateUserDto.email;
     if (updateUserDto.password) {
-      data.password = await bcrypt.hash(
+      data.password = await this.passwordService.hash(
         updateUserDto.password,
-        parseInt(process.env['BCRYPT_SALT_ROUNDS'] || '10'),
       );
     }
 

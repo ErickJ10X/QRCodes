@@ -17,9 +17,11 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { Public } from 'src/common/decorators/public.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import type { IAuthenticatedUser } from 'src/common/interfaces/authenticated-user.interface';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Controller('users')
 @UseGuards(JwtGuard)
+@UseGuards(RolesGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 

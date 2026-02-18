@@ -3,7 +3,7 @@ import { UserRole } from 'src/common/enums/user-role.enum';
 
 export class AuthResponseDto {
   @Expose()
-  accesToken: string;
+  accessToken: string;
 
   @Expose()
   refreshToken: string;

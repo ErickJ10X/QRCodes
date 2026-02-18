@@ -1,24 +1,37 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, User } from 'generated/prisma/client';
+import { UserRole } from 'src/common/enums/user-role.enum';
 import { PrismaService } from 'src/core/prisma.service';
 
-type SafeUser = Prisma.UserGetPayload<{
-  select: typeof UsersRepository.SAFE_USER_SELECT;
-}>;
+export type SafeUser = {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type UserWithPassword = SafeUser & {
+  password: string;
+};
 
 @Injectable()
 export class UsersRepository {
-  constructor(private prisma: PrismaService) {}
-
   static readonly SAFE_USER_SELECT = {
     id: true,
     email: true,
     firstName: true,
     lastName: true,
     role: true,
+    isActive: true,
     createdAt: true,
     updatedAt: true,
   } as const;
+
+  constructor(private prisma: PrismaService) {}
 
   async create(data: Prisma.UserCreateInput): Promise<SafeUser> {
     return this.prisma.user.create({
@@ -39,6 +52,30 @@ export class UsersRepository {
       where: { email },
       select: UsersRepository.SAFE_USER_SELECT,
     });
+  }
+
+  async findByEmailWithPassword(
+    email: string,
+  ): Promise<UserWithPassword | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role as UserRole,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      password: user.password,
+    };
   }
 
   async findMany(

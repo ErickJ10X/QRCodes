@@ -1,4 +1,5 @@
 import { Request } from 'express';
+import { UserRole } from '../enums/user-role.enum';
 
 export interface IAuthenticatedRequest extends Request {
   user: {
@@ -6,6 +7,6 @@ export interface IAuthenticatedRequest extends Request {
     email: string;
     firstName: string;
     lastName: string;
-    role: string;
+    role: UserRole;
   };
 }

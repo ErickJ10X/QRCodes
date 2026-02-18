@@ -12,5 +12,10 @@ async function bootstrap() {
     }),
   );
   await app.listen(process.env.PORT ?? 3000);
+  app.enableCors({
+    origin: process.env['ALLOWED_ORIGIN'] || 'http://localhost:3000',
+    Credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  });
 }
 bootstrap();

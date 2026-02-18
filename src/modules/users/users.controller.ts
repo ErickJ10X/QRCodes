@@ -7,6 +7,7 @@ import {
   Get,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -38,13 +39,13 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() user: IAuthenticatedUser,
   ) {
@@ -55,7 +56,7 @@ export class UsersController {
 
   @Delete(':id')
   async remove(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: IAuthenticatedUser,
   ) {
     const currentId = user.id;

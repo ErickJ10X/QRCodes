@@ -13,6 +13,7 @@ import { RegisterDto } from './dto/register.dto';
 import { JwtRefreshGuard } from 'src/common/guards/jwt-refresh.guard';
 import { JwtGuard } from 'src/common/guards/jwt.guard';
 import type { IAuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -20,12 +21,14 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Public()
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Public()
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }

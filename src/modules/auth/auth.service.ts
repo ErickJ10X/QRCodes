@@ -117,8 +117,8 @@ export class AuthService {
     };
   }
 
-  async logout(refreshTokenId: number): Promise<{ message: string }> {
-    await this.refreshTokenRepository.revoke(refreshTokenId);
+  async logout(userId: number): Promise<{ message: string }> {
+    await this.refreshTokenRepository.revokeAllByUserId(userId);
     return { message: 'Logout exitoso' };
   }
 

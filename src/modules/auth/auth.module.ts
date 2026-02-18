@@ -7,6 +7,7 @@ import { RefreshTokenRepository } from './repositories/refresh-token.repository'
 import { TokenService } from 'src/core/token.service';
 import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
 import { JwtRefreshStrategy } from 'src/common/strategies/jwt-refresh.strategy';
+import { PasswordService } from 'src/core/password.service';
 
 @Module({
   imports: [PassportModule.register({ defaultStrategy: 'jwt' }), UsersModule],
@@ -17,6 +18,7 @@ import { JwtRefreshStrategy } from 'src/common/strategies/jwt-refresh.strategy';
     TokenService,
     JwtStrategy,
     JwtRefreshStrategy,
+    PasswordService,
   ],
   exports: [UsersModule],
 })

@@ -3,9 +3,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as CustomStrategy } from 'passport-custom';
 import * as jose from 'jose';
 import { TokenType } from '../enums/token-type.enum';
-import { UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
+@Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   CustomStrategy,
   'jwt-refresh',
@@ -15,9 +16,9 @@ export class JwtRefreshStrategy extends PassportStrategy(
   constructor(private configService: ConfigService) {
     super();
 
-    const secretString = this.configService.get<string>('JWT_REFRESH_SECRET');
+    const secretString = this.configService.get<string>('JWT_SECRET');
     if (!secretString) {
-      throw new Error('JWT_REFRESH_SECRET variable de entorno no definida');
+      throw new Error('JWT_SECRET variable de entorno no definida');
     }
     this.secret = new TextEncoder().encode(secretString);
   }

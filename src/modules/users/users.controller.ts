@@ -9,6 +9,13 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+  ApiParam,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,6 +28,7 @@ import type { IAuthenticatedUser } from 'src/common/interfaces/authenticated-use
 import { RolesGuard } from 'src/common/guards/roles.guard';
 
 @Controller('users')
+@ApiTags('Users')
 @UseGuards(JwtGuard)
 @UseGuards(RolesGuard)
 export class UsersController {
@@ -28,22 +36,55 @@ export class UsersController {
 
   @Post()
   @Public()
+  @ApiOperation({ summary: 'Crea un nuevo usuario' })
+  @ApiResponse({
+    status: 201,
+    description: 'Usuario creado exitosamente',
+  })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 409, description: 'Email ya registrado' })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Obtiene todos los usuarios (Solo Admin)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de usuarios obtenida',
+  })
+  @ApiResponse({ status: 403, description: 'Solo admins pueden acceder' })
   async findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
+  @ApiBearerAuth('JWT-auth')
+  @ApiParam({ name: 'id', description: 'ID del usuario', type: 'number' })
+  @ApiOperation({ summary: 'Obtiene un usuario por ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuario encontrado',
+  })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @ApiBearerAuth('JWT-auth')
+  @ApiParam({ name: 'id', description: 'ID del usuario', type: 'number' })
+  @ApiOperation({
+    summary: 'Actualiza un usuario (El usuario solo puede actualizar su propia info)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuario actualizado',
+  })
+  @ApiResponse({ status: 403, description: 'No tienes permiso' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -55,6 +96,17 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth('JWT-auth')
+  @ApiParam({ name: 'id', description: 'ID del usuario', type: 'number' })
+  @ApiOperation({
+    summary: 'Elimina un usuario (El usuario solo puede eliminar su propia cuenta)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuario eliminado',
+  })
+  @ApiResponse({ status: 403, description: 'No tienes permiso' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   async remove(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: IAuthenticatedUser,

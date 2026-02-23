@@ -18,7 +18,9 @@ export class JwtRefreshStrategy extends PassportStrategy(
 
     const secretString = this.configService.get<string>('JWT_SECRET');
     if (!secretString) {
-      throw new Error('JWT_SECRET variable de entorno no definida');
+      throw new UnauthorizedException(
+        'JWT_SECRET variable de entorno no definida',
+      );
     }
     this.secret = new TextEncoder().encode(secretString);
   }
@@ -27,7 +29,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
     const token = req.body?.refreshToken;
 
     if (!token) {
-      throw new Error('Refresh token no proporcionado');
+      throw new UnauthorizedException('Refresh token no proporcionado');
     }
 
     try {

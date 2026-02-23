@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { HealthModule } from './modules/health/health.module';
 import { GlobalAuthGuard } from './common/guards/global-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
-import { APP_GUARD } from '@nestjs/core';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 @Module({
   imports: [
@@ -12,11 +15,30 @@ import { APP_GUARD } from '@nestjs/core';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'global',
+          ttl: 60 * 1000,
+          limit: 100,
+        },
+        {
+          name: 'auth',
+          ttl: 15 * 60 * 1000,
+          limit: 5,
+        },
+      ],
+    }),
     UsersModule,
     AuthModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: GlobalAuthGuard,
@@ -24,6 +46,10 @@ import { APP_GUARD } from '@nestjs/core';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
     },
   ],
 })

@@ -63,6 +63,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Public()
   @UseGuards(JwtRefreshGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('JWT-auth')
@@ -76,7 +77,6 @@ export class AuthController {
   }
 
   @Post('logout')
-  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Cierra la sesión actual' })

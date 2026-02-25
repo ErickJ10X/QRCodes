@@ -6,12 +6,12 @@ import {
 } from '@nestjs/common';
 import { UsersRepository } from './repositories/users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Prisma } from 'generated/prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PasswordService } from 'src/core/password.service';
-import { UserRole } from 'src/common/enums/user-role.enum';
+import { PasswordService } from '../../core/password.service';
+import { UserRole } from '../../common/enums/user-role.enum';
+import { Prisma } from '../../generated/prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -74,9 +74,7 @@ export class UsersService {
     if (isAdmin && updateUserDto.email !== undefined)
       data.email = updateUserDto.email;
     if (updateUserDto.password) {
-      data.password = await this.passwordService.hash(
-        updateUserDto.password,
-      );
+      data.password = await this.passwordService.hash(updateUserDto.password);
     }
 
     try {

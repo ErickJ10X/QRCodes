@@ -9,7 +9,7 @@ import {
   MinLength,
   Matches,
 } from 'class-validator';
-import { UserRole } from 'src/common/enums/user-role.enum';
+import { UserRole } from '../../../common/enums/user-role.enum';
 
 export class CreateUserDto {
   @IsEmail(undefined, { message: 'El email debe ser válido' })

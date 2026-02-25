@@ -19,13 +19,13 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserRole } from 'src/common/enums/user-role.enum';
-import { JwtGuard } from 'src/common/guards/jwt.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Public } from 'src/common/decorators/public.decorator';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import type { IAuthenticatedUser } from 'src/common/interfaces/authenticated-user.interface';
-import { RolesGuard } from 'src/common/guards/roles.guard';
+import { UserRole } from '../../common/enums/user-role.enum';
+import { JwtGuard } from '../../common/guards/jwt.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { IAuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
+import { RolesGuard } from '../../common/guards/roles.guard';
 
 @Controller('users')
 @ApiTags('Users')

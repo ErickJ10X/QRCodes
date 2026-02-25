@@ -5,12 +5,12 @@ import {
 } from '@nestjs/common';
 import { UsersRepository } from '../users/repositories/users.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
-import { TokenService } from 'src/core/token.service';
+import { TokenService } from '../../core/token.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { UserRole } from 'src/common/enums/user-role.enum';
-import { IAuthenticatedUser } from 'src/common/interfaces/authenticated-user.interface';
-import { PasswordService } from 'src/core/password.service';
+import { UserRole } from '../../common/enums/user-role.enum';
+import { IAuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
+import { PasswordService } from '../../core/password.service';
 
 @Injectable()
 export class AuthService {

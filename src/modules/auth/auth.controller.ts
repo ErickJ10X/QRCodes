@@ -12,10 +12,10 @@ import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagg
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { JwtRefreshGuard } from 'src/common/guards/jwt-refresh.guard';
-import { JwtGuard } from 'src/common/guards/jwt.guard';
-import type { IAuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
-import { Public } from 'src/common/decorators/public.decorator';
+import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
+import { JwtGuard } from '../../common/guards/jwt.guard';
+import type { IAuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
+import { Public } from '../../common/decorators/public.decorator';
 
 @Controller('auth')
 @ApiTags('Auth')

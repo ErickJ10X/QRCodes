@@ -4,10 +4,10 @@ import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
-import { TokenService } from 'src/core/token.service';
-import { JwtStrategy } from 'src/common/strategies/jwt.strategy';
-import { JwtRefreshStrategy } from 'src/common/strategies/jwt-refresh.strategy';
-import { PasswordService } from 'src/core/password.service';
+import { TokenService } from '../../core/token.service';
+import { JwtStrategy } from '../../common/strategies/jwt.strategy';
+import { JwtRefreshStrategy } from '../../common/strategies/jwt-refresh.strategy';
+import { PasswordService } from '../../core/password.service';
 
 @Module({
   imports: [PassportModule.register({ defaultStrategy: 'jwt' }), UsersModule],

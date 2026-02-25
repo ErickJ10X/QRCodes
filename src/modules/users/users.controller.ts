@@ -29,8 +29,6 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 
 @Controller('users')
 @ApiTags('Users')
-@UseGuards(JwtGuard)
-@UseGuards(RolesGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 

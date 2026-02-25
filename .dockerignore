@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Generated files (will be regenerated during build)
+src/generated
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+
+# Documentation
+*.md
+DIAGRAMAS.md
+ARQUITECTURA_COMPLETA.md
+
+# Tests
+test
+coverage
+*.spec.ts
+
+# Docker files (no need to copy into context recursively)
+docker/Dockerfile.*
+docker-compose*.yml
+
+# Misc
+.prettierrc
+eslint.config.mjs
+tsconfig.build.tsbuildinfo

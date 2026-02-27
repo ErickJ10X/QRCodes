@@ -24,11 +24,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  refreshTokens RefreshToken[]
+  qrCodes QrCode[]
+  scans ScanLog[]
+
   @@index([email])
   @@index([role])
   @@map("users")
-
-  refreshTokens RefreshToken[]
 }
 
 enum UserRole {
@@ -52,4 +54,96 @@ model RefreshToken {
   @@index([userId])
   @@index([token])
   @@map("refresh_tokens")
+}
+
+model QrCode {
+  id Int @id @default(autoincrement())
+  userId Int
+  targetUrl String
+  title  String
+  description String?
+  format QrFormat @default(PNG)
+  qrData String @db.Text
+  status QrStatus @default(ACTIVE)
+  scans Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metadata QrMetadata[]
+  scanLogs ScanLog[]
+  statistics QrStatistic[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+
+  @@map("qr_codes")
+}
+
+enum QrFormat {
+  PNG
+  SVG
+
+  @@map("qr_format")
+}
+
+enum QrStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+
+  @@map("qr_status")
+}
+
+model QrMetadata {
+  id Int @id @default(autoincrement())
+  qrId Int
+  key String
+  value String
+  createdAt DateTime @default(now())
+
+  qrCode QrCode @relation(fields: [qrId], references: [id], onDelete: Cascade)
+
+  @@unique([qrId, key])
+  @@index([qrId])
+  @@map("qr_metadata")
+}
+
+model ScanLog {
+  id Int @id @default(autoincrement())
+  qrId Int
+  userId Int?
+  ipAddress String?
+  userAgent String?
+  country String?
+  device String?
+  scannedAt DateTime @default(now())
+
+  qrCode QrCode  @relation(fields: [qrId], references: [id], onDelete: Cascade)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([qrId])
+  @@index([userId])
+  @@index([scannedAt])
+
+  @@map("scan_logs")
+}
+
+model QrStatistic {
+  id Int @id @default(autoincrement())
+  qrId Int
+  date DateTime
+  scanCount Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  qrCode QrCode @relation(fields: [qrId],  references: [id], onDelete: Cascade)
+
+  @@unique([qrId, date])
+  @@index([qrId])
+  @@index([date])
+
+  @@map("qr_statistics")
 }

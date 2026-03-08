@@ -9,14 +9,14 @@ import {
   QrCode,
   QrFormat,
   QrStatus,
-} from 'src/generated/prisma/client';
+} from '../../generated/prisma/client';
 import { CreateQrDto } from './dto/create-qr.dto';
 import { UpdateQrDto } from './dto/update-qr.dto';
 import { QrResponseDto } from './dto/qr-response.dto';
 import { QrListDto } from './dto/qr-list.dto';
 import { QrCodesRepository } from './repositories/qr-codes.repository';
 import { QrGeneratorService } from './qr-generator.service';
-import { PrismaService } from 'src/core/prisma.service';
+import { PrismaService } from '../../core/prisma.service';
 import { plainToInstance } from 'class-transformer';
 
 /**

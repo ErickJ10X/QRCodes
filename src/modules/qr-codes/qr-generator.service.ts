@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as QRCode from 'qrcode';
-import { QrFormat } from 'src/generated/prisma/enums';
+import { QrFormat } from '../../generated/prisma/enums';
 
 /**
  * Opciones para generación de QR codes

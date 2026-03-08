@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/core/prisma.service';
-import { Prisma, QrCode } from 'src/generated/prisma/client';
-import { QrStatus } from 'src/generated/prisma/enums';
+import { PrismaService } from '../../../core/prisma.service';
+import { Prisma, QrCode } from '../../../generated/prisma/client';
+import { QrStatus } from '../../../generated/prisma/enums';
 
 /**
  * Opciones de paginación para queries de QrCode

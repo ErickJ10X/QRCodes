@@ -8,12 +8,16 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
-import { JwtGuard } from '../../common/guards/jwt.guard';
 import type { IAuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
 import { Public } from '../../common/decorators/public.decorator';
 

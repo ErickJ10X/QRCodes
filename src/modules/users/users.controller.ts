@@ -20,12 +20,10 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from '../../common/enums/user-role.enum';
-import { JwtGuard } from '../../common/guards/jwt.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { IAuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
-import { RolesGuard } from '../../common/guards/roles.guard';
 
 @Controller('users')
 @ApiTags('Users')
@@ -75,7 +73,8 @@ export class UsersController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', description: 'ID del usuario', type: 'number' })
   @ApiOperation({
-    summary: 'Actualiza un usuario (El usuario solo puede actualizar su propia info)',
+    summary:
+      'Actualiza un usuario (El usuario solo puede actualizar su propia info)',
   })
   @ApiResponse({
     status: 200,
@@ -97,7 +96,8 @@ export class UsersController {
   @ApiBearerAuth('JWT-auth')
   @ApiParam({ name: 'id', description: 'ID del usuario', type: 'number' })
   @ApiOperation({
-    summary: 'Elimina un usuario (El usuario solo puede eliminar su propia cuenta)',
+    summary:
+      'Elimina un usuario (El usuario solo puede eliminar su propia cuenta)',
   })
   @ApiResponse({
     status: 200,

@@ -12,16 +12,20 @@ import {
   Res,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { Response } from 'express';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { QrFormat, User } from 'src/generated/prisma/client';
+import { QrFormat, QrStatus, User } from '../../generated/prisma/client';
 import { QrCodesService } from './qr-codes.service';
 import { CreateQrDto } from './dto/create-qr.dto';
 import { UpdateQrDto } from './dto/update-qr.dto';
 import { QrResponseDto } from './dto/qr-response.dto';
 import { QrListDto } from './dto/qr-list.dto';
-import { QrStatus } from 'src/generated/prisma/client';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 /**
  * QrCodesController

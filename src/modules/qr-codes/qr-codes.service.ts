@@ -246,15 +246,18 @@ export class QrCodesService {
    * Decodifica el Base64 guardado en BD
    * @param id - ID del QR
    * @param userId - ID del usuario
-   * @returns Buffer del QR para descargar
+   * @returns Objecto con buffer y formato del QR para descargar
    */
-  async downloadQr(id: number, userId: number): Promise<Buffer> {
+  async downloadQr(
+    id: number,
+    userId: number,
+  ): Promise<{ buffer: Buffer; format: QrFormat }> {
     const qr = await this.ensureOwnership(id, userId);
 
     try {
       // Decodificar Base64 guardado en BD
       const buffer = Buffer.from(qr.qrData, 'base64');
-      return buffer;
+      return { buffer, format: qr.format };
     } catch (error) {
       throw new BadRequestException('Error decodificando QR para descarga');
     }

@@ -6,6 +6,7 @@ import { PrismaModule } from './core/prisma.module';
 import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { QrCodesModule } from './modules/qr-codes/qr-codes.module';
 import { GlobalAuthGuard } from './common/guards/global-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
@@ -34,6 +35,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     UsersModule,
     AuthModule,
     HealthModule,
+    QrCodesModule,
   ],
   controllers: [],
   providers: [

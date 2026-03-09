@@ -18,9 +18,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 
     const secretString = this.configService.get<string>('JWT_SECRET');
     if (!secretString) {
-      throw new UnauthorizedException(
-        'JWT_SECRET variable de entorno no definida',
-      );
+      throw new Error('[JwtRefreshStrategy] JWT_SECRET not configured');
     }
     this.secret = new TextEncoder().encode(secretString);
   }

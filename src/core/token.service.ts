@@ -8,6 +8,8 @@ import { JwtPayload } from '../common/interfaces/jwt-payload.interface';
 export class TokenService {
   private secret: Uint8Array;
   private readonly algorithm = 'HS256';
+  private readonly defaultAccessTokenExpiry = '15m';
+  private readonly defaultRefreshTokenExpiry = '7d';
 
   constructor(private configService: ConfigService) {
     const secretString = this.configService.get<string>('JWT_SECRET');
@@ -26,7 +28,8 @@ export class TokenService {
     })
       .setProtectedHeader({ alg: this.algorithm })
       .setExpirationTime(
-        this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_IN') || '15m',
+        this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN') ||
+          this.defaultAccessTokenExpiry,
       )
       .sign(this.secret);
   }
@@ -40,7 +43,8 @@ export class TokenService {
     })
       .setProtectedHeader({ alg: this.algorithm })
       .setExpirationTime(
-        this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN') || '7d',
+        this.configService.get<string>('JWT_REFRESH_TOKEN_EXPIRES_IN') ||
+          this.defaultRefreshTokenExpiry,
       )
       .sign(this.secret);
   }
@@ -50,7 +54,13 @@ export class TokenService {
       const { payload } = await jose.jwtVerify(token, this.secret);
       return payload as unknown as JwtPayload;
     } catch (error: any) {
-      throw new Error('Token inválido o expirado');
+      if (error.message?.includes('signature verification failed')) {
+        throw new Error('Token con firma inválida');
+      }
+      if (error.message?.includes('Token is expired')) {
+        throw new Error('Token expirado');
+      }
+      throw new Error('Token inválido');
     }
   }
 

@@ -113,9 +113,7 @@ export class AuthService {
     });
     return {
       accessToken,
-      expiresIn: this.parseExpiresIn(
-        process.env['JWT_ACCESS_TOKEN_EXPIRES_IN'] || '15m',
-      ),
+      expiresIn: this.parseExpiresIn('15m'),
     };
   }
 
@@ -146,9 +144,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken: refreshToken,
-      expiresIn: this.parseExpiresIn(
-        process.env['JWT_ACCESS_TOKEN_EXPIRES_IN'] || '15m',
-      ),
+      expiresIn: this.parseExpiresIn('15m'),
       user: {
         id: user.id,
         email: user.email,

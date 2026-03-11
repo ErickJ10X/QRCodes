@@ -67,9 +67,8 @@ services:
 
       # JWT
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-key-change-in-production}
-      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600}
-      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800}
-
+      JWT_ACCESS_TOKEN_EXPIRES_IN: ${JWT_ACCESS_TOKEN_EXPIRES_IN:-15m}
+      JWT_REFRESH_TOKEN_EXPIRES_IN: ${JWT_REFRESH_TOKEN_EXPIRES_IN:-7d}
       # App
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-3000}

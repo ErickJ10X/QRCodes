@@ -17,6 +17,7 @@ import { QrListDto } from './dto/qr-list.dto';
 import { QrCodesRepository } from './repositories/qr-codes.repository';
 import { QrGeneratorService } from './qr-generator.service';
 import { PrismaService } from '../../core/prisma.service';
+import { CacheService } from '../cache/cache.service';
 import { plainToInstance } from 'class-transformer';
 
 /**
@@ -43,7 +44,35 @@ export class QrCodesService {
     private qrRepository: QrCodesRepository,
     private qrGenerator: QrGeneratorService,
     private prisma: PrismaService,
+    private cacheService: CacheService,
   ) {}
+
+  // cache configuration
+  /**
+   * TTL para cache de QR codes individuales
+   * 7 dias: 604800 segundos
+   * valor por defecto si QR_CACHE_TTL no esta definido
+   */
+  private readonly QR_CACHE_TTL = parseInt(
+    process.env['QR_CACHE_TTL'] || '604800',
+    10,
+  );
+
+  /**
+   * Prefijo para cache keys de qr codes
+   * Ej: 'qr:123' para QR con ID 123
+   */
+  private readonly CACHE_KEY_QR = 'qr';
+
+  /**
+   * Generar clave para cache de QR code
+   * @param qrId - ID del QR code
+   * @returns Clave para cache
+   */
+  private generateQrCacheKey(qrId: number): string {
+    return `${this.CACHE_KEY_QR}:${qrId}`;
+  }
+
   /**
    * Verificar que el QR pertenece al usuario
    * @throws NotFoundException si el QR no existe
@@ -177,7 +206,15 @@ export class QrCodesService {
    * @returns QrResponseDto del QR obtenido
    */
   async findOne(id: number, userId: number): Promise<QrResponseDto> {
+    const cacheKey = this.generateQrCacheKey(id);
+    const cachedQr = await this.cacheService.get<QrCode>(cacheKey);
+    if (cachedQr) {
+      if (cachedQr.userId === userId) {
+        return this.toResponseDto(cachedQr);
+      }
+    }
     const qr = await this.ensureOwnership(id, userId);
+    await this.cacheService.set(cacheKey, qr, this.QR_CACHE_TTL * 1000);
     return this.toResponseDto(qr);
   }
 
@@ -214,7 +251,8 @@ export class QrCodesService {
     // Actualizar en BD
     const updatedQr = await this.qrRepository.update(id, updateData);
 
-    // TODO: Fase 4 - Invalidar cache Redis
+    const cacheKey = this.generateQrCacheKey(id);
+    await this.cacheService.del(cacheKey);
 
     return this.toResponseDto(updatedQr);
   }
@@ -227,6 +265,8 @@ export class QrCodesService {
   async remove(id: number, userId: number): Promise<void> {
     await this.ensureOwnership(id, userId);
     await this.qrRepository.softDelete(id);
+    const cacheKey = this.generateQrCacheKey(id);
+    await this.cacheService.del(cacheKey);
   }
 
   /**
@@ -238,6 +278,8 @@ export class QrCodesService {
   async archive(id: number, userId: number): Promise<QrResponseDto> {
     await this.ensureOwnership(id, userId);
     const archivedQr = await this.qrRepository.softArchive(id);
+    const cacheKey = this.generateQrCacheKey(id);
+    await this.cacheService.del(cacheKey);
     return this.toResponseDto(archivedQr);
   }
 

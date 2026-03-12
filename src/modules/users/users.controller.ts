@@ -6,7 +6,6 @@ import {
   Param,
   Get,
   Delete,
-  UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
 import {
@@ -19,6 +18,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 import { UserRole } from '../../common/enums/user-role.enum';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
@@ -36,10 +36,11 @@ export class UsersController {
   @ApiResponse({
     status: 201,
     description: 'Usuario creado exitosamente',
+    type: UserResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'Email ya registrado' })
-  async create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.create(createUserDto);
   }
 
@@ -50,9 +51,11 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Lista de usuarios obtenida',
+    type: [UserResponseDto],
   })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'Solo admins pueden acceder' })
-  async findAll() {
+  async findAll(): Promise<UserResponseDto[]> {
     return this.usersService.findAll();
   }
 
@@ -63,9 +66,11 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Usuario encontrado',
+    type: UserResponseDto,
   })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserResponseDto> {
     return this.usersService.findOne(id);
   }
 
@@ -79,14 +84,17 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Usuario actualizado',
+    type: UserResponseDto,
   })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'No tienes permiso' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
     @CurrentUser() user: IAuthenticatedUser,
-  ) {
+  ): Promise<UserResponseDto> {
     const currentId = user.id;
     const isAdmin = user.role === UserRole.ADMIN;
     return this.usersService.update(id, updateUserDto, currentId, isAdmin);
@@ -102,7 +110,14 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Usuario eliminado',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Usuario eliminado exitosamente' },
+      },
+    },
   })
+  @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'No tienes permiso' })
   @ApiResponse({ status: 404, description: 'Usuario no encontrado' })
   async remove(

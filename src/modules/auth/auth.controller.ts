@@ -13,10 +13,13 @@ import {
   ApiResponse,
   ApiTags,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { AuthResponseDto } from './dto/auth-response,dto';
 import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
 import type { IAuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
 import { Public } from '../../common/decorators/public.decorator';
@@ -31,23 +34,15 @@ export class AuthController {
   @Public()
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
   @ApiOperation({ summary: 'Inicia sesión con email y contraseña' })
+  @ApiBody({ type: LoginDto })
   @ApiResponse({
     status: 200,
     description: 'Login exitoso, retorna tokens JWT',
-    example: {
-      success: true,
-      message: 'Success',
-      data: {
-        accessToken: 'eyJhbGc...',
-        refreshToken: 'eyJhbGc...',
-        expiresIn: 900,
-        user: { id: 1, email: 'user@example.com', role: 'USER' },
-      },
-    },
+    type: AuthResponseDto,
   })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   @ApiResponse({ status: 429, description: 'Demasiados intentos de login' })
-  async login(@Body() loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
   }
 
@@ -56,13 +51,16 @@ export class AuthController {
   @Public()
   @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
   @ApiOperation({ summary: 'Registra un nuevo usuario' })
+  @ApiBody({ type: RegisterDto })
   @ApiResponse({
     status: 201,
     description: 'Usuario registrado exitosamente',
+    type: AuthResponseDto,
   })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 409, description: 'Email ya registrado' })
   @ApiResponse({ status: 429, description: 'Demasiados intentos de registro' })
-  async register(@Body() registerDto: RegisterDto) {
+  async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
     return this.authService.register(registerDto);
   }
 
@@ -72,7 +70,18 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Genera un nuevo access token' })
-  @ApiResponse({ status: 200, description: 'Token renovado exitosamente' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Token renovado exitosamente',
+    schema: {
+      type: 'object',
+      properties: {
+        accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        expiresIn: { type: 'number', example: 900 },
+      },
+    },
+  })
   @ApiResponse({ status: 401, description: 'Refresh token inválido/expirado' })
   async refresh(@Req() req: IAuthenticatedRequest) {
     const userId = req.user.id;
@@ -84,7 +93,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Cierra la sesión actual' })
-  @ApiResponse({ status: 200, description: 'Logout exitoso' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout exitoso',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Sesión cerrada exitosamente' },
+      },
+    },
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async logout(@Req() req: IAuthenticatedRequest) {
     const userId = req.user.id;

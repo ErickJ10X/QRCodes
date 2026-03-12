@@ -1,10 +1,10 @@
 import { CacheModuleOptions } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
+import KeyvRedis from '@keyv/redis';
 import { ConfigService } from '@nestjs/config';
 
 /**
- * Configuración de Redis para @nestjs/cache-manager v3.x + cache-manager v7 + cache-manager-redis-yet v5.x
- * Proporciona opciones de conexión y TTL por defecto usando cache-manager-redis-yet
+ * Configuración de Redis para @nestjs/cache-manager v3.x con @keyv/redis
+ * @nestjs/cache-manager v3+ usa Keyv internamente, requiere adapters de @keyv/*
  *
  * Usa variables de entorno:
  * - REDIS_HOST: Host del servidor Redis (default: localhost)
@@ -15,28 +15,22 @@ import { ConfigService } from '@nestjs/config';
  * @param configService - ConfigService de NestJS para leer .env
  * @returns CacheModuleOptions configuradas para Redis
  */
-export const redisConfig = (
-  configService: ConfigService,
-): CacheModuleOptions => {
+export const redisConfig = (configService: ConfigService): CacheModuleOptions => {
   const redisHost = configService.get<string>('REDIS_HOST', 'localhost');
   const redisPort = configService.get<number>('REDIS_PORT', 6379);
   const redisPassword = configService.get<string>('REDIS_PASSWORD', 'redis123');
-  // TTL en MILISEGUNDOS (3600000 = 1 hora)
   const cacheTtl = configService.get<number>('CACHE_TTL', 3600000);
 
+  // Construir URL de Redis con autenticación
+  const redisUrl = redisPassword
+    ? `redis://:${redisPassword}@${redisHost}:${redisPort}`
+    : `redis://${redisHost}:${redisPort}`;
+
+  // @keyv/redis es el adapter correcto para @nestjs/cache-manager v3.x
+  const store = new KeyvRedis(redisUrl);
+
   return {
-    // v3.x usa "stores" (array) en lugar de "store" (string)
-    stores: [
-      redisStore({
-        socket: {
-          host: redisHost,
-          port: redisPort,
-        },
-        password: redisPassword,
-        // Nota: db no es soportado en cache-manager-redis-yet v5.x
-        // Si necesitas múltiples bases de datos, crea instancias separadas
-      }),
-    ],
-    ttl: cacheTtl, // En milisegundos para cache-manager v7
-  } as CacheModuleOptions;
+    store,
+    ttl: cacheTtl,
+  };
 };

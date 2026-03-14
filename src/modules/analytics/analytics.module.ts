@@ -15,4 +15,4 @@ import { QrStatisticRepository } from './repositories/qr-statistic.repository';
   ],
   exports: [ScanService],
 })
-export class AnalythicsModule {}
+export class AnalyticsModule {}

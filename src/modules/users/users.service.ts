@@ -10,7 +10,7 @@ import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordService } from '../../core/password.service';
-import { UserRole } from '../../common/enums/user-role.enum';
+import { UserRole } from '../../generated/prisma/enums';
 import { Prisma } from '../../generated/prisma/client';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { TokenType } from '../enums/token-type.enum';
-import { UserRole } from '../enums/user-role.enum';
+import { UserRole } from '../../generated/prisma/enums';
 
 export interface JwtPayload {
   id: number;

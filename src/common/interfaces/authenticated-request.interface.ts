@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { UserRole } from '../enums/user-role.enum';
+import { UserRole } from '../../generated/prisma/enums';
 
 export interface IAuthenticatedRequest extends Request {
   user: {

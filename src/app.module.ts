@@ -11,6 +11,7 @@ import { QrCodesModule } from './modules/qr-codes/qr-codes.module';
 import { GlobalAuthGuard } from './common/guards/global-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     AuthModule,
     HealthModule,
     QrCodesModule,
+    AnalyticsModule,
   ],
   controllers: [],
   providers: [

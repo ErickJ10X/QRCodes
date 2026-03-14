@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from '../../../common/enums/user-role.enum';
+import { UserRole } from '../../../generated/prisma/enums';
 
 /**
  * DTO para información básica del usuario autenticado
@@ -10,7 +10,10 @@ export class AuthUserDto {
   @Expose()
   id: number;
 
-  @ApiProperty({ description: 'Email del usuario', example: 'usuario@example.com' })
+  @ApiProperty({
+    description: 'Email del usuario',
+    example: 'usuario@example.com',
+  })
   @Expose()
   email: string;
 
@@ -18,11 +21,19 @@ export class AuthUserDto {
   @Expose()
   firstName: string;
 
-  @ApiProperty({ description: 'Apellido del usuario', example: 'Pérez', required: false })
+  @ApiProperty({
+    description: 'Apellido del usuario',
+    example: 'Pérez',
+    required: false,
+  })
   @Expose()
   lastName?: string;
 
-  @ApiProperty({ description: 'Rol del usuario', enum: UserRole, example: UserRole.USER })
+  @ApiProperty({
+    description: 'Rol del usuario',
+    enum: UserRole,
+    example: UserRole.USER,
+  })
   @Expose()
   role: UserRole;
 }

@@ -10,7 +10,7 @@ import {
   Matches,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserRole } from '../../../common/enums/user-role.enum';
+import { UserRole } from '../../../generated/prisma/enums';
 
 /**
  * DTO para creación de usuarios
@@ -49,7 +49,8 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'El nombre es obligatorio' })
   @Length(1, 50, { message: 'El nombre debe tener entre 1 y 50 caracteres' })
   @Matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s-']+$/, {
-    message: 'El nombre solo puede contener letras, espacios, guiones y apóstrofes',
+    message:
+      'El nombre solo puede contener letras, espacios, guiones y apóstrofes',
   })
   firstName: string;
 
@@ -62,7 +63,8 @@ export class CreateUserDto {
   @IsString()
   @MaxLength(50, { message: 'El apellido no puede exceder 50 caracteres' })
   @Matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s-']*$/, {
-    message: 'El apellido solo puede contener letras, espacios, guiones y apóstrofes',
+    message:
+      'El apellido solo puede contener letras, espacios, guiones y apóstrofes',
   })
   lastName?: string;
 

@@ -87,7 +87,7 @@ export class AnalyticsService {
 
   /**
    * Obtener dashboard del usuario con resumen de todos sus QRs
-   * @Param userId - ID del usuario
+   * @param userId - ID del usuario
    * @returns Resumen de QRs con total de escaneos y actividad reciente
    */
   async getUserDashboard(userId: number): Promise<DashboardDto> {

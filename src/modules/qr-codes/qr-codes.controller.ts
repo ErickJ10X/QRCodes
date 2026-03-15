@@ -16,7 +16,6 @@ import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
-  ApiQuery,
   ApiResponse,
   ApiParam,
 } from '@nestjs/swagger';
@@ -27,6 +26,7 @@ import { CreateQrDto } from './dto/create-qr.dto';
 import { UpdateQrDto } from './dto/update-qr.dto';
 import { QrResponseDto } from './dto/qr-response.dto';
 import { QrListDto } from './dto/qr-list.dto';
+import { ListQrQueryDto } from './dto/list-qr-query.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 /**
@@ -63,23 +63,16 @@ export class QrCodesController {
    */
   @Get()
   @ApiOperation({ summary: 'Listar códigos QR del usuario' })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1, description: 'Número de página' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, example: 10, description: 'Cantidad por página' })
-  @ApiQuery({ name: 'status', required: false, enum: QrStatus, description: 'Filtrar por estado' })
   @ApiResponse({ status: 200, description: 'Lista de códigos QR', type: QrListDto })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async findAll(
     @CurrentUser() user: User,
-    @Query('page') page: string = '1',
-    @Query('limit') limit: string = '10',
-    @Query('status') status?: QrStatus,
+    @Query() query: ListQrQueryDto,
   ): Promise<QrListDto> {
-    const pageNumber = parseInt(page, 10);
-    const limitNumber = parseInt(limit, 10);
     return this.qrCodesService.findAll(user.id, {
-      page: pageNumber,
-      limit: limitNumber,
-      status,
+      page: query.page ?? 1,
+      limit: query.limit ?? 10,
+      status: query.status,
     });
   }
 

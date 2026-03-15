@@ -26,6 +26,7 @@ import { DashboardDto } from './dto/dashboard.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '../../generated/prisma/client';
+import { PrismaService } from '../../core/prisma.service';
 
 /**
  * AnalyticsController
@@ -37,6 +38,7 @@ export class AnalyticsController {
   constructor(
     private readonly scanService: ScanService,
     private readonly analyticsService: AnalyticsService,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -124,7 +126,7 @@ export class AnalyticsController {
     qrId: number,
     userId: number,
   ): Promise<{ id: number }> {
-    const qr = await (global as any).prisma?.qrcode.findUnique({
+    const qr = await this.prisma.qrCode.findUnique({
       where: { id: qrId },
       select: { userId: true, id: true },
     });

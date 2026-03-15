@@ -141,19 +141,25 @@ export class AnalyticsService {
       take: 5,
     });
 
-    const topQrCodes: QrSummaryDto[] = qrCodes.slice(0, 5).map((qr) => {
-      const scansLastWeekForQr = qrCodes.reduce((sum, q) => {
-        if (q.id === qr.id) {
-          return sum;
-        }
-        return sum;
-      }, 0);
+    const scansLastWeekByQr = await this.prisma.scanLog.groupBy({
+      by: ['qrId'],
+      where: {
+        qrCode: { userId },
+        scannedAt: { gte: lastWeek },
+      },
+      _count: { qrId: true },
+    });
 
+    const scansLastWeekMap = new Map(
+      scansLastWeekByQr.map((entry) => [entry.qrId, entry._count.qrId]),
+    );
+
+    const topQrCodes: QrSummaryDto[] = qrCodes.slice(0, 5).map((qr) => {
       return {
         id: qr.id,
         title: qr.title,
         totalScans: qr.scans,
-        scansLastWeek: scansLastWeekForQr,
+        scansLastWeek: scansLastWeekMap.get(qr.id) ?? 0,
         createdAt: qr.createdAt,
       };
     });

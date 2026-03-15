@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker/.';
+import { faker } from '@faker-js/faker';
 import { RecordScanDto } from 'src/modules/analytics/dto/record-scan.dto';
 
 export class ScanLogFactory {

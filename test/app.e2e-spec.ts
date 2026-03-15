@@ -16,10 +16,20 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  it('/health (GET)', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/health')
+      .expect(200);
+
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        status: expect.any(String),
+        database: expect.any(String),
+        redis: expect.any(String),
+        uptime: expect.any(Number),
+      }),
+    );
+
+    expect(new Date(response.body.timestamp).toString()).not.toBe('Invalid Date');
   });
 });

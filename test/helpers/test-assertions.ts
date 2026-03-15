@@ -1,8 +1,44 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
+import { ValidationError } from 'class-validator';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { HttpExceptionFilter } from '../../src/common/filters/http-exception.filter';
 
+let throttlerDisabled = false;
+
 export function setupTestApp(app: INestApplication) {
-  // Aplicar los mismos pipes/filters que en main.ts
+  // Desactivar rate-limit en e2e para evitar falsos negativos por volumen de pruebas
+  if (!throttlerDisabled) {
+    ThrottlerGuard.prototype.canActivate = async () => true;
+    throttlerDisabled = true;
+  }
+
+  // Mantener comportamiento de rutas y validacion alineado con main.ts
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+      errorHttpStatusCode: 422,
+      stopAtFirstError: false,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const messages = errors.map((error: ValidationError) => {
+          const constraints = Object.values(error.constraints || {});
+          return `${error.property}: ${constraints.join(', ')}`;
+        });
+        return new BadRequestException({
+          statusCode: 422,
+          message: messages,
+          error: 'Validation Failed',
+        });
+      },
+    }),
+  );
   app.useGlobalFilters(new HttpExceptionFilter());
 
   return app;

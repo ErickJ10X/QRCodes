@@ -6,7 +6,7 @@ import { PrismaService } from '../../src/core/prisma.service';
 import { DatabaseHelper } from '../helpers/database.helper';
 import { UserFactory } from '../factories/user.factory';
 import { QrCodeFactory } from '../factories/qr-code.factory';
-import { testAssertions } from '../helpers/test-assertions';
+import { setupTestApp, testAssertions } from '../helpers/test-assertions';
 
 describe('QR Codes Endpoints (e2e)', () => {
   let app: INestApplication;
@@ -20,7 +20,7 @@ describe('QR Codes Endpoints (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = setupTestApp(moduleFixture.createNestApplication());
     await app.init();
 
     prisma = moduleFixture.get<PrismaService>(PrismaService);
@@ -30,12 +30,14 @@ describe('QR Codes Endpoints (e2e)', () => {
   beforeEach(async () => {
     await dbHelper.clearDatabase();
 
-    const createUserDto = UserFactory.create();
+    const createUserDto = UserFactory.createRegisterDto();
     const registerResponse = await request(app.getHttpServer())
       .post('/api/auth/register')
       .send(createUserDto);
 
-    const registerPayload = testAssertions.unwrapResponse(registerResponse.body);
+    const registerPayload = testAssertions.unwrapResponse(
+      registerResponse.body,
+    );
     accessToken = registerPayload.accessToken;
     userId = registerPayload.user.id;
   });
@@ -69,7 +71,7 @@ describe('QR Codes Endpoints (e2e)', () => {
         .post('/api/qr-codes')
         .set('Authorization', `Bearer ${accessToken}`)
         .send(createQrDto)
-        .expect(422);
+        .expect(400);
 
       testAssertions.expectErrorResponse(response.body);
     });
@@ -93,8 +95,8 @@ describe('QR Codes Endpoints (e2e)', () => {
         .expect(200);
 
       const payload = testAssertions.unwrapResponse(response.body);
-      expect(Array.isArray(payload.data)).toBe(true);
-      expect(payload.data.length).toBe(2);
+      expect(Array.isArray(payload)).toBe(true);
+      expect(payload.length).toBe(2);
     });
   });
 

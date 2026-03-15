@@ -5,7 +5,7 @@ import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/core/prisma.service';
 import { DatabaseHelper } from '../helpers/database.helper';
 import { UserFactory } from '../factories/user.factory';
-import { testAssertions } from '../helpers/test-assertions';
+import { setupTestApp, testAssertions } from '../helpers/test-assertions';
 
 describe('Users Endpoints (e2e)', () => {
   let app: INestApplication;
@@ -19,7 +19,7 @@ describe('Users Endpoints (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = setupTestApp(moduleFixture.createNestApplication());
     await app.init();
 
     prisma = moduleFixture.get<PrismaService>(PrismaService);
@@ -30,12 +30,14 @@ describe('Users Endpoints (e2e)', () => {
     await dbHelper.clearDatabase();
 
     // Registrar usuario y obtener token
-    const createUserDto = UserFactory.create();
+    const createUserDto = UserFactory.createRegisterDto();
     const registerResponse = await request(app.getHttpServer())
       .post('/api/auth/register')
       .send(createUserDto);
 
-    const registerPayload = testAssertions.unwrapResponse(registerResponse.body);
+    const registerPayload = testAssertions.unwrapResponse(
+      registerResponse.body,
+    );
     accessToken = registerPayload.accessToken;
     userId = registerPayload.user.id;
   });

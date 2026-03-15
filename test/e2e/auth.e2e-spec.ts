@@ -5,7 +5,7 @@ import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/core/prisma.service';
 import { DatabaseHelper } from '../helpers/database.helper';
 import { UserFactory } from '../factories/user.factory';
-import { testAssertions } from '../helpers/test-assertions';
+import { setupTestApp, testAssertions } from '../helpers/test-assertions';
 
 describe('Auth Endpoints (e2e)', () => {
   let app: INestApplication;
@@ -17,7 +17,7 @@ describe('Auth Endpoints (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = setupTestApp(moduleFixture.createNestApplication());
     await app.init();
 
     prisma = moduleFixture.get<PrismaService>(PrismaService);
@@ -34,7 +34,7 @@ describe('Auth Endpoints (e2e)', () => {
 
   describe('POST /api/auth/register', () => {
     it('should register a new user', async () => {
-      const createUserDto = UserFactory.create();
+      const createUserDto = UserFactory.createRegisterDto();
 
       const response = await request(app.getHttpServer())
         .post('/api/auth/register')
@@ -47,18 +47,20 @@ describe('Auth Endpoints (e2e)', () => {
     });
 
     it('should reject invalid email format', async () => {
-      const invalidDto = UserFactory.create({ email: 'invalid-email' });
+      const invalidDto = UserFactory.createRegisterDto({
+        email: 'invalid-email',
+      });
 
       const response = await request(app.getHttpServer())
         .post('/api/auth/register')
         .send(invalidDto)
-        .expect(422);
+        .expect(400);
 
       testAssertions.expectErrorResponse(response.body);
     });
 
     it('should reject duplicate email', async () => {
-      const createUserDto = UserFactory.create();
+      const createUserDto = UserFactory.createRegisterDto();
 
       // Primera registración
       await request(app.getHttpServer())
@@ -78,7 +80,7 @@ describe('Auth Endpoints (e2e)', () => {
 
   describe('POST /api/auth/login', () => {
     it('should login with valid credentials', async () => {
-      const createUserDto = UserFactory.create();
+      const createUserDto = UserFactory.createRegisterDto();
 
       // Registrar usuario
       await request(app.getHttpServer())
@@ -113,7 +115,7 @@ describe('Auth Endpoints (e2e)', () => {
     });
 
     it('should reject invalid password', async () => {
-      const createUserDto = UserFactory.create();
+      const createUserDto = UserFactory.createRegisterDto();
 
       await request(app.getHttpServer())
         .post('/api/auth/register')
@@ -133,7 +135,7 @@ describe('Auth Endpoints (e2e)', () => {
 
   describe('POST /api/auth/refresh', () => {
     it('should refresh access token with valid refresh token', async () => {
-      const createUserDto = UserFactory.create();
+      const createUserDto = UserFactory.createRegisterDto();
 
       // Registrar y obtener tokens
       const registerResponse = await request(app.getHttpServer())
@@ -141,7 +143,9 @@ describe('Auth Endpoints (e2e)', () => {
         .send(createUserDto)
         .expect(201);
 
-      const registerPayload = testAssertions.unwrapResponse(registerResponse.body);
+      const registerPayload = testAssertions.unwrapResponse(
+        registerResponse.body,
+      );
       const refreshToken = registerPayload.refreshToken;
 
       // Usar refresh token

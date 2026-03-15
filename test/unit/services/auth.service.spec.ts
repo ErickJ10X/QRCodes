@@ -33,6 +33,7 @@ describe('AuthService', () => {
       signAccessToken: jest.fn().mockResolvedValue('access-token'),
       signRefreshToken: jest.fn().mockResolvedValue('refresh-token'),
       decodeToken: jest.fn().mockReturnValue({ exp: 9999999999 }),
+      getAccessTokenExpiresInSeconds: jest.fn().mockReturnValue(900),
     };
 
     const mockPasswordService = {
@@ -85,7 +86,9 @@ describe('AuthService', () => {
         password: '$2a$10$hashedpassword',
       };
 
-      usersRepository.findByEmailWithPassword.mockResolvedValue(mockUser as any);
+      usersRepository.findByEmailWithPassword.mockResolvedValue(
+        mockUser as any,
+      );
       passwordService.compare.mockResolvedValue(true);
 
       const result = await service.login(loginDto);

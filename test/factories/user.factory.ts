@@ -1,9 +1,20 @@
 import { faker } from '@faker-js/faker';
 import { UserRole } from 'src/generated/prisma/enums';
+import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
 import { UserResponseDto } from 'src/modules/users/dto/user-response.dto';
 
 export class UserFactory {
+  static createRegisterDto(overrides?: Partial<RegisterDto>): RegisterDto {
+    return {
+      email: faker.internet.email(),
+      password: 'Password123!@#',
+      firstName: faker.person.firstName(),
+      lastName: faker.person.lastName(),
+      ...overrides,
+    };
+  }
+
   static create(overrides?: Partial<CreateUserDto>): CreateUserDto {
     return {
       email: faker.internet.email(),

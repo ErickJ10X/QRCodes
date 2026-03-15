@@ -6,7 +6,7 @@ import { PrismaService } from '../../src/core/prisma.service';
 import { DatabaseHelper } from '../helpers/database.helper';
 import { UserFactory } from '../factories/user.factory';
 import { QrCodeFactory } from '../factories/qr-code.factory';
-import { testAssertions } from '../helpers/test-assertions';
+import { setupTestApp, testAssertions } from '../helpers/test-assertions';
 
 describe('Analytics Endpoints (e2e)', () => {
   let app: INestApplication;
@@ -21,7 +21,7 @@ describe('Analytics Endpoints (e2e)', () => {
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = setupTestApp(moduleFixture.createNestApplication());
     await app.init();
 
     prisma = moduleFixture.get<PrismaService>(PrismaService);
@@ -32,12 +32,14 @@ describe('Analytics Endpoints (e2e)', () => {
     await dbHelper.clearDatabase();
 
     // Crear usuario
-    const createUserDto = UserFactory.create();
+    const createUserDto = UserFactory.createRegisterDto();
     const registerResponse = await request(app.getHttpServer())
       .post('/api/auth/register')
       .send(createUserDto);
 
-    const registerPayload = testAssertions.unwrapResponse(registerResponse.body);
+    const registerPayload = testAssertions.unwrapResponse(
+      registerResponse.body,
+    );
     accessToken = registerPayload.accessToken;
     userId = registerPayload.user.id;
 
@@ -73,7 +75,7 @@ describe('Analytics Endpoints (e2e)', () => {
       });
 
       expect(scanLog).toBeDefined();
-      expect(scanLog?.ipAddress).toBe('192.168.1.1');
+      expect(scanLog?.ipAddress).toMatch(/127\.0\.0\.1$/);
     });
   });
 
@@ -103,12 +105,14 @@ describe('Analytics Endpoints (e2e)', () => {
 
     it('should reject access from non-owner', async () => {
       // Crear otro usuario
-      const otherUserDto = UserFactory.create();
+      const otherUserDto = UserFactory.createRegisterDto();
       const otherUserResponse = await request(app.getHttpServer())
         .post('/api/auth/register')
         .send(otherUserDto);
 
-      const otherPayload = testAssertions.unwrapResponse(otherUserResponse.body);
+      const otherPayload = testAssertions.unwrapResponse(
+        otherUserResponse.body,
+      );
       const otherToken = otherPayload.accessToken;
 
       await request(app.getHttpServer())

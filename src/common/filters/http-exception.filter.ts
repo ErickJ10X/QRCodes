@@ -2,6 +2,7 @@ import {
   ArgumentsHost,
   Catch,
   ExceptionFilter,
+  HttpStatus,
   HttpException,
   Logger,
 } from '@nestjs/common';
@@ -16,32 +17,36 @@ interface ErrorResponse {
   error?: string;
 }
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const status = exception.getStatus();
-    const exceptionResponse = exception.getResponse();
+    const isHttpException = exception instanceof HttpException;
+    const status = isHttpException
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
-      typeof exceptionResponse === 'string'
-        ? (exceptionResponse as any).message || exception.message
-        : exception.message;
+    const exceptionResponse = isHttpException
+      ? exception.getResponse()
+      : 'Internal server error';
+
+    const message = this.resolveMessage(exceptionResponse, exception);
 
     const errorResponse: ErrorResponse = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      message: message,
+      message,
     };
 
     if (process.env.NODE_ENV === 'development') {
-      errorResponse.error = exception.name;
+      errorResponse.error =
+        exception instanceof Error ? exception.name : 'UnknownError';
     }
 
     this.logger.error(
@@ -49,9 +54,39 @@ export class HttpExceptionFilter implements ExceptionFilter {
       {
         message,
         stack:
-          process.env.NODE_ENV === 'development' ? exception.stack : undefined,
+          process.env.NODE_ENV === 'development' && exception instanceof Error
+            ? exception.stack
+            : undefined,
       },
     );
     response.status(status).json(errorResponse);
+  }
+
+  private resolveMessage(
+    exceptionResponse: unknown,
+    exception: unknown,
+  ): string | string[] {
+    if (typeof exceptionResponse === 'string') {
+      return exceptionResponse;
+    }
+
+    if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+      const asRecord = exceptionResponse as Record<string, unknown>;
+      const message = asRecord.message;
+
+      if (Array.isArray(message) || typeof message === 'string') {
+        return message;
+      }
+
+      if (typeof asRecord.error === 'string') {
+        return asRecord.error;
+      }
+    }
+
+    if (exception instanceof Error) {
+      return exception.message;
+    }
+
+    return 'Internal server error';
   }
 }

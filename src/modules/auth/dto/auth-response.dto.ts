@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../../generated/prisma/enums';
 
 /**
- * DTO para información básica del usuario autenticado
+ * DTO para informacion basica del usuario autenticado
  */
 export class AuthUserDto {
   @ApiProperty({ description: 'ID del usuario', example: 1 })
@@ -23,7 +23,7 @@ export class AuthUserDto {
 
   @ApiProperty({
     description: 'Apellido del usuario',
-    example: 'Pérez',
+    example: 'Perez',
     required: false,
   })
   @Expose()
@@ -39,7 +39,7 @@ export class AuthUserDto {
 }
 
 /**
- * DTO de respuesta para autenticación exitosa
+ * DTO de respuesta para autenticacion exitosa
  * @description Contiene tokens JWT y datos del usuario
  */
 export class AuthResponseDto {
@@ -58,14 +58,14 @@ export class AuthResponseDto {
   refreshToken: string;
 
   @ApiProperty({
-    description: 'Tiempo de expiración del access token en segundos',
+    description: 'Tiempo de expiracion del access token en segundos',
     example: 900,
   })
   @Expose()
   expiresIn: number;
 
   @ApiProperty({
-    description: 'Información del usuario autenticado',
+    description: 'Informacion del usuario autenticado',
     type: AuthUserDto,
   })
   @Expose()

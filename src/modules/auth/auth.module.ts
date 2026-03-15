@@ -20,6 +20,6 @@ import { PasswordService } from '../../core/password.service';
     JwtRefreshStrategy,
     PasswordService,
   ],
-  exports: [UsersModule],
+  exports: [AuthService],
 })
 export class AuthModule {}

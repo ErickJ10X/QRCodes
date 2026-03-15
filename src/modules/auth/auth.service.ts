@@ -113,7 +113,7 @@ export class AuthService {
     });
     return {
       accessToken,
-      expiresIn: this.parseExpiresIn('15m'),
+      expiresIn: this.tokenService.getAccessTokenExpiresInSeconds(),
     };
   }
 
@@ -144,7 +144,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken: refreshToken,
-      expiresIn: this.parseExpiresIn('15m'),
+      expiresIn: this.tokenService.getAccessTokenExpiresInSeconds(),
       user: {
         id: user.id,
         email: user.email,
@@ -153,21 +153,5 @@ export class AuthService {
         role: user.role,
       },
     };
-  }
-
-  private parseExpiresIn(expiresIn: string): number {
-    const match = expiresIn.match(/^(\d+)([smhd])$/);
-    if (!match) return 900;
-
-    const [, value, unit] = match;
-    const num = parseInt(value, 10);
-
-    const unitToSeconds: Record<string, number> = {
-      s: 1,
-      m: 60,
-      h: 3600,
-      d: 86400,
-    };
-    return num * (unitToSeconds[unit] || 60);
   }
 }

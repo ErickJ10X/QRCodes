@@ -19,7 +19,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { AuthResponseDto } from './dto/auth-response,dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
 import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
 import type { IAuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
 import { Public } from '../../common/decorators/public.decorator';
@@ -77,7 +77,10 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+        accessToken: {
+          type: 'string',
+          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        },
         expiresIn: { type: 'number', example: 900 },
       },
     },

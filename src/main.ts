@@ -39,7 +39,6 @@ async function bootstrap() {
         preload: true,
       },
       noSniff: true,
-      xssFilter: true,
       referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
     }),
   );
@@ -100,7 +99,7 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'access-token',
+      'JWT-auth',
     )
     .addServer(`http://localhost:${process.env.PORT || 3000}`, 'Local')
     .addServer('https://api.example.com', 'Production')

@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker/.';
+import { faker } from '@faker-js/faker';
 import { QrFormat } from 'src/generated/prisma/enums';
 import { CreateQrDto } from 'src/modules/qr-codes/dto/create-qr.dto';
 import { QrResponseDto } from 'src/modules/qr-codes/dto/qr-response.dto';

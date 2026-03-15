@@ -93,15 +93,23 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "rootDir": ".",
+    "testMatch": [
+      "<rootDir>/test/unit/**/*.spec.ts"
+    ],
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/src/$1",
+      "^jose$": "<rootDir>/test/mocks/jose.ts",
+      "^uuid$": "<rootDir>/test/mocks/uuid.ts",
+      "^@faker-js/faker$": "<rootDir>/test/mocks/faker.ts"
+    },
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "coverage",
     "testEnvironment": "node"
   }
 }

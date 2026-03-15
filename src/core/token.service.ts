@@ -49,6 +49,13 @@ export class TokenService {
       .sign(this.secret);
   }
 
+  getAccessTokenExpiresInSeconds(): number {
+    const configured =
+      this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN') ||
+      this.defaultAccessTokenExpiry;
+    return this.parseExpiresIn(configured);
+  }
+
   async verifyToken(token: string): Promise<JwtPayload> {
     try {
       const { payload } = await jose.jwtVerify(token, this.secret);
@@ -67,5 +74,21 @@ export class TokenService {
   // solo para debugging
   decodeToken(token: string): JwtPayload {
     return jose.decodeJwt(token) as unknown as JwtPayload;
+  }
+
+  private parseExpiresIn(expiresIn: string): number {
+    const match = expiresIn.match(/^(\d+)([smhd])$/);
+    if (!match) return 900;
+
+    const [, value, unit] = match;
+    const num = parseInt(value, 10);
+
+    const unitToSeconds: Record<string, number> = {
+      s: 1,
+      m: 60,
+      h: 3600,
+      d: 86400,
+    };
+    return num * (unitToSeconds[unit] || 60);
   }
 }

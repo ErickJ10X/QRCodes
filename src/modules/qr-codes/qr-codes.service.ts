@@ -80,7 +80,7 @@ export class QrCodesService {
    */
   private async ensureOwnership(qrId: number, userId: number): Promise<QrCode> {
     const qr = await this.qrRepository.findById(qrId);
-    if (!qr) {
+    if (!qr || qr.status === QrStatus.DELETED) {
       throw new NotFoundException('QR code no encontrado');
     }
     if (qr.userId !== userId) {
@@ -158,10 +158,16 @@ export class QrCodesService {
 
       // Crear metadata (tags) si existen
       if (tags && tags.length > 0) {
+        const normalizedTags = tags
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0);
+
+        const uniqueTags = Array.from(new Set(normalizedTags));
+
         await this.prisma.qrMetadata.createMany({
-          data: tags.map((tag) => ({
+          data: uniqueTags.map((tag, index) => ({
             qrId: qrRecord.id,
-            key: 'tag',
+            key: `tag_${index + 1}`,
             value: tag,
           })),
         });

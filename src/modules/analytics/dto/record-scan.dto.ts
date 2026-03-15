@@ -9,9 +9,11 @@ export class RecordScanDto {
   @ApiProperty({
     description: 'ID del Qr escaneado',
     example: 1,
+    required: false,
   })
+  @IsOptional()
   @IsNumber()
-  qrId: number;
+  qrId?: number;
 
   @ApiProperty({
     description: 'Id del usuario escaneado',

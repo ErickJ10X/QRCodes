@@ -4,6 +4,14 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
+type HealthResponse = {
+  status: string;
+  database: string;
+  redis: string;
+  uptime: number;
+  timestamp: string;
+};
+
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
@@ -21,7 +29,9 @@ describe('AppController (e2e)', () => {
       .get('/health')
       .expect(200);
 
-    expect(response.body).toEqual(
+    const body = response.body as HealthResponse;
+
+    expect(body).toEqual(
       expect.objectContaining({
         status: expect.any(String),
         database: expect.any(String),
@@ -30,6 +40,6 @@ describe('AppController (e2e)', () => {
       }),
     );
 
-    expect(new Date(response.body.timestamp).toString()).not.toBe('Invalid Date');
+    expect(new Date(body.timestamp).toString()).not.toBe('Invalid Date');
   });
 });

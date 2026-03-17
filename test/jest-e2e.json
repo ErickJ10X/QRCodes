@@ -3,7 +3,9 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "maxWorkers": 1,
+  "forceExit": true,
   "testRegex": ".e2e-spec.ts$",
+  "globalSetup": "<rootDir>/setup/global-setup.js",
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/../src/$1",
     "^@common/(.*)$": "<rootDir>/../src/common/$1",

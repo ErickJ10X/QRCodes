@@ -3,14 +3,14 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersRepository } from '../users/repositories/users.repository';
+import { UsersRepository } from '@modules/users/repositories/users.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
-import { TokenService } from '../../core/token.service';
+import { TokenService } from '@core/token.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { UserRole } from '../../generated/prisma/enums';
-import { IAuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
-import { PasswordService } from '../../core/password.service';
+import { IAuthenticatedUser } from '@interfaces/authenticated-user.interface';
+import { PasswordService } from '@core/password.service';
 
 @Injectable()
 export class AuthService {

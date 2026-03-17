@@ -11,13 +11,24 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "baseUrl": "./src",
     "incremental": false,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@common/*": ["./common/*"],
+      "@core/*": ["./core/*"],
+      "@modules/*": ["./modules/*"],
+      "@decorators/*": ["./common/decorators/*"],
+      "@guards/*": ["./common/guards/*"],
+      "@strategies/*": ["./common/strategies/*"],
+      "@interfaces/*": ["./common/interfaces/*"],
+      "@enums/*": ["./common/enums/*"]
+    }
   }
 }

@@ -27,7 +27,7 @@ import { UpdateQrDto } from './dto/update-qr.dto';
 import { QrResponseDto } from './dto/qr-response.dto';
 import { QrListDto } from './dto/qr-list.dto';
 import { ListQrQueryDto } from './dto/list-qr-query.dto';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { CurrentUser } from '@decorators/current-user.decorator';
 
 /**
  * QrCodesController
@@ -47,7 +47,11 @@ export class QrCodesController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Crear un nuevo código QR' })
-  @ApiResponse({ status: 201, description: 'Código QR creado exitosamente', type: QrResponseDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Código QR creado exitosamente',
+    type: QrResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async create(
@@ -63,7 +67,11 @@ export class QrCodesController {
    */
   @Get()
   @ApiOperation({ summary: 'Listar códigos QR del usuario' })
-  @ApiResponse({ status: 200, description: 'Lista de códigos QR', type: QrListDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de códigos QR',
+    type: QrListDto,
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async findAll(
     @CurrentUser() user: User,
@@ -79,9 +87,16 @@ export class QrCodesController {
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un código QR por su ID' })
   @ApiParam({ name: 'id', description: 'ID del código QR', type: Number })
-  @ApiResponse({ status: 200, description: 'Código QR encontrado', type: QrResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Código QR encontrado',
+    type: QrResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No tienes permiso para ver este QR' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tienes permiso para ver este QR',
+  })
   @ApiResponse({ status: 404, description: 'Código QR no encontrado' })
   async findOne(
     @Param('id', ParseIntPipe) id: number,
@@ -96,12 +111,22 @@ export class QrCodesController {
    * Solo permite cambios en: title, description, status
    */
   @Put(':id')
-  @ApiOperation({ summary: 'Actualizar un código QR', description: 'Solo permite cambiar title, description y status' })
+  @ApiOperation({
+    summary: 'Actualizar un código QR',
+    description: 'Solo permite cambiar title, description y status',
+  })
   @ApiParam({ name: 'id', description: 'ID del código QR', type: Number })
-  @ApiResponse({ status: 200, description: 'Código QR actualizado', type: QrResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Código QR actualizado',
+    type: QrResponseDto,
+  })
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No tienes permiso para modificar este QR' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tienes permiso para modificar este QR',
+  })
   @ApiResponse({ status: 404, description: 'Código QR no encontrado' })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -117,11 +142,17 @@ export class QrCodesController {
    */
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar un código QR', description: 'Realiza un soft delete (marca como DELETED)' })
+  @ApiOperation({
+    summary: 'Eliminar un código QR',
+    description: 'Realiza un soft delete (marca como DELETED)',
+  })
   @ApiParam({ name: 'id', description: 'ID del código QR', type: Number })
   @ApiResponse({ status: 204, description: 'Código QR eliminado exitosamente' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No tienes permiso para eliminar este QR' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tienes permiso para eliminar este QR',
+  })
   @ApiResponse({ status: 404, description: 'Código QR no encontrado' })
   async remove(
     @Param('id', ParseIntPipe) id: number,
@@ -135,11 +166,21 @@ export class QrCodesController {
    * POST /qr-codes/:id/archive
    */
   @Post(':id/archive')
-  @ApiOperation({ summary: 'Archivar un código QR', description: 'Cambia el estado a ARCHIVED' })
+  @ApiOperation({
+    summary: 'Archivar un código QR',
+    description: 'Cambia el estado a ARCHIVED',
+  })
   @ApiParam({ name: 'id', description: 'ID del código QR', type: Number })
-  @ApiResponse({ status: 200, description: 'Código QR archivado', type: QrResponseDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Código QR archivado',
+    type: QrResponseDto,
+  })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No tienes permiso para archivar este QR' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tienes permiso para archivar este QR',
+  })
   @ApiResponse({ status: 404, description: 'Código QR no encontrado' })
   async archive(
     @Param('id', ParseIntPipe) id: number,
@@ -153,11 +194,17 @@ export class QrCodesController {
    * GET /qr-codes/:id/download
    */
   @Get(':id/download')
-  @ApiOperation({ summary: 'Descargar el código QR como imagen', description: 'Retorna el archivo PNG o SVG' })
+  @ApiOperation({
+    summary: 'Descargar el código QR como imagen',
+    description: 'Retorna el archivo PNG o SVG',
+  })
   @ApiParam({ name: 'id', description: 'ID del código QR', type: Number })
   @ApiResponse({ status: 200, description: 'Archivo de imagen del QR' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No tienes permiso para descargar este QR' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tienes permiso para descargar este QR',
+  })
   @ApiResponse({ status: 404, description: 'Código QR no encontrado' })
   async download(
     @Param('id', ParseIntPipe) id: number,
@@ -200,7 +247,10 @@ export class QrCodesController {
     },
   })
   @ApiResponse({ status: 401, description: 'No autenticado' })
-  @ApiResponse({ status: 403, description: 'No tienes permiso para ver estas estadísticas' })
+  @ApiResponse({
+    status: 403,
+    description: 'No tienes permiso para ver estas estadísticas',
+  })
   @ApiResponse({ status: 404, description: 'Código QR no encontrado' })
   async getStats(
     @Param('id', ParseIntPipe) id: number,

@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as CustomStrategy } from 'passport-custom';
 import * as jose from 'jose';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
-import { TokenType } from '../enums/token-type.enum';
+import { JwtPayload } from '@interfaces/jwt-payload.interface';
+import { TokenType } from '@enums/token-type.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(CustomStrategy, 'jwt') {

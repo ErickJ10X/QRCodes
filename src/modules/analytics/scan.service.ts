@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../core/prisma.service';
+import { PrismaService } from '@core/prisma.service';
 import { GeoIpService } from './geoip.service';
 import { ScanLogRepository } from './repositories/scan-log.repository';
 import { QrStatisticRepository } from './repositories/qr-statistic.repository';

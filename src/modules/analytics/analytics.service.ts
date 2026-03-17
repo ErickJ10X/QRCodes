@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../core/prisma.service';
-import { CacheService } from '../cache/cache.service';
+import { PrismaService } from '@core/prisma.service';
+import { CacheService } from '@modules/cache/cache.service';
 import { QrStatDto, DailyScanDto, CountryScanDto } from './dto/qr-stat.dto';
 import { DashboardDto, QrSummaryDto } from './dto/dashboard.dto';
 

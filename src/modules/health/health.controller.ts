@@ -1,6 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiProperty } from '@nestjs/swagger';
-import { Public } from '../../common/decorators/public.decorator';
+import {
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiProperty,
+} from '@nestjs/swagger';
+import { Public } from '@decorators/public.decorator';
 import { HealthService } from './health.service';
 
 /**

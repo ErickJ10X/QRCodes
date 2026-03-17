@@ -2,9 +2,9 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy as CustomStrategy } from 'passport-custom';
 import * as jose from 'jose';
-import { TokenType } from '../enums/token-type.enum';
+import { TokenType } from '@enums/token-type.enum';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { JwtPayload } from '@interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(

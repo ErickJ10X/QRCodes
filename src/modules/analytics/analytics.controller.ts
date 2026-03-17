@@ -23,10 +23,10 @@ import { AnalyticsService } from './analytics.service';
 import { RecordScanDto } from './dto/record-scan.dto';
 import { QrStatDto } from './dto/qr-stat.dto';
 import { DashboardDto } from './dto/dashboard.dto';
-import { Public } from '../../common/decorators/public.decorator';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Public } from '@decorators/public.decorator';
+import { CurrentUser } from '@decorators/current-user.decorator';
 import { User } from '../../generated/prisma/client';
-import { PrismaService } from '../../core/prisma.service';
+import { PrismaService } from '@core/prisma.service';
 
 /**
  * AnalyticsController

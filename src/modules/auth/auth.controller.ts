@@ -20,9 +20,9 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
-import { JwtRefreshGuard } from '../../common/guards/jwt-refresh.guard';
-import type { IAuthenticatedRequest } from '../../common/interfaces/authenticated-request.interface';
-import { Public } from '../../common/decorators/public.decorator';
+import { JwtRefreshGuard } from '@guards/jwt-refresh.guard';
+import type { IAuthenticatedRequest } from '@interfaces/authenticated-request.interface';
+import { Public } from '@decorators/public.decorator';
 
 @Controller('auth')
 @ApiTags('Auth')

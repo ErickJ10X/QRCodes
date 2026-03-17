@@ -51,8 +51,6 @@ pids
 
 # Prisma
 .prisma/
-prisma/migrations/**
-!prisma/migrations/.gitkeep
 
 # Package managers
 bun.lockb

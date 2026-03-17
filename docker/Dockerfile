@@ -63,6 +63,9 @@ COPY --from=builder --chown=nestjs:nestjs /app/package.json ./package.json
 COPY --chown=nestjs:nestjs scripts/start.sh ./start.sh
 RUN chmod +x ./start.sh
 
+# Create GeoIP directory with correct ownership
+RUN mkdir -p /app/data/geoip && chown -R nestjs:nestjs /app/data
+
 ENV NODE_ENV=production
 
 USER nestjs

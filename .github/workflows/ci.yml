@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: qrcode
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: qrcode_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Generate Prisma client
+        run: bunx prisma generate
+        env:
+          DATABASE_URL: postgresql://qrcode:postgres@localhost:5432/qrcode_test
+
+      - name: Run migrations
+        run: bunx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://qrcode:postgres@localhost:5432/qrcode_test
+
+      - name: Run unit tests
+        run: bun run test:cov
+        env:
+          DATABASE_URL: postgresql://qrcode:postgres@localhost:5432/qrcode_test
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_SECRET: test-secret-ci
+          NODE_ENV: test
+
+      - name: Run E2E tests
+        run: bun run test:e2e
+        env:
+          DATABASE_URL: postgresql://qrcode:postgres@localhost:5432/qrcode_test
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_SECRET: test-secret-ci
+          NODE_ENV: test

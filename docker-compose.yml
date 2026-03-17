@@ -82,7 +82,7 @@ services:
       GEOIP_DB_PATH: /app/data/geoip/GeoLite2-City.mmdb
     volumes:
       - geoip_data:/app/data/geoip:ro
-    command: sh -c "bunx prisma migrate deploy && bun dist/main.js"
+    command: sh ./start.sh
     ports:
       - '${PORT:-3000}:3000'
     networks:

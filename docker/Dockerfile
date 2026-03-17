@@ -59,6 +59,10 @@ COPY --from=builder --chown=nestjs:nestjs /app/prisma ./prisma
 COPY --from=builder --chown=nestjs:nestjs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nestjs:nestjs /app/package.json ./package.json
 
+# Copy startup script
+COPY --chown=nestjs:nestjs scripts/start.sh ./start.sh
+RUN chmod +x ./start.sh
+
 ENV NODE_ENV=production
 
 USER nestjs

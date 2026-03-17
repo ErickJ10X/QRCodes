@@ -70,7 +70,7 @@ services:
       JWT_ACCESS_TOKEN_EXPIRES_IN: ${JWT_ACCESS_TOKEN_EXPIRES_IN:-15m}
       JWT_REFRESH_TOKEN_EXPIRES_IN: ${JWT_REFRESH_TOKEN_EXPIRES_IN:-7d}
       # App
-      NODE_ENV: ${NODE_ENV:-development}
+      NODE_ENV: production
       PORT: ${PORT:-3000}
       APP_NAME: ${APP_NAME:-QR Code Generator}
       APP_VERSION: ${APP_VERSION:-1.0.0}

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';
-import { QrFormat } from 'src/generated/prisma/enums';
-import { CreateQrDto } from 'src/modules/qr-codes/dto/create-qr.dto';
-import { QrResponseDto } from 'src/modules/qr-codes/dto/qr-response.dto';
+import { QrFormat } from '@/generated/prisma/enums';
+import { CreateQrDto } from '@/modules/qr-codes/dto/create-qr.dto';
+import { QrResponseDto } from '@/modules/qr-codes/dto/qr-response.dto';
 
 export class QrCodeFactory {
   static create(userId: number, overrides?: Partial<CreateQrDto>): CreateQrDto {

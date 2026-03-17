@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { RecordScanDto } from 'src/modules/analytics/dto/record-scan.dto';
+import { RecordScanDto } from '@/modules/analytics/dto/record-scan.dto';
 
 export class ScanLogFactory {
   static create(overrides?: Partial<RecordScanDto>): RecordScanDto {

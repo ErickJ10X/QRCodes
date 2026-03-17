@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
-import { UserRole } from 'src/generated/prisma/enums';
-import { RegisterDto } from 'src/modules/auth/dto/register.dto';
-import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
-import { UserResponseDto } from 'src/modules/users/dto/user-response.dto';
+import { UserRole } from '@/generated/prisma/enums';
+import { RegisterDto } from '@/modules/auth/dto/register.dto';
+import { CreateUserDto } from '@/modules/users/dto/create-user.dto';
+import { UserResponseDto } from '@/modules/users/dto/user-response.dto';
 
 export class UserFactory {
   static createRegisterDto(overrides?: Partial<RegisterDto>): RegisterDto {

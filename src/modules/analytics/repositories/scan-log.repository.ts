@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, ScanLog } from '../../../generated/prisma/client';
-import { PrismaService } from '@core/prisma.service';
+import { PrismaService } from '../../../core/prisma.service';
 
 export interface CreateScanLogInput {
   qrId: number;

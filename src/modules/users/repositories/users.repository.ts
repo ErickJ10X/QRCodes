@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserRole } from '../../../generated/prisma/enums';
-import { PrismaService } from '@core/prisma.service';
+import { PrismaService } from '../../../core/prisma.service';
 import { Prisma } from '../../../generated/prisma/client';
 
 export type SafeUser = {

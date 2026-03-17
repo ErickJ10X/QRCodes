@@ -16,8 +16,8 @@ import { QrResponseDto } from './dto/qr-response.dto';
 import { QrListDto } from './dto/qr-list.dto';
 import { QrCodesRepository } from './repositories/qr-codes.repository';
 import { QrGeneratorService } from './qr-generator.service';
-import { PrismaService } from '@core/prisma.service';
-import { CacheService } from '@modules/cache/cache.service';
+import { PrismaService } from '../../core/prisma.service';
+import { CacheService } from '../cache/cache.service';
 import { plainToInstance } from 'class-transformer';
 
 /**

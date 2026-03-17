@@ -27,7 +27,7 @@ import { UpdateQrDto } from './dto/update-qr.dto';
 import { QrResponseDto } from './dto/qr-response.dto';
 import { QrListDto } from './dto/qr-list.dto';
 import { ListQrQueryDto } from './dto/list-qr-query.dto';
-import { CurrentUser } from '@decorators/current-user.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 /**
  * QrCodesController

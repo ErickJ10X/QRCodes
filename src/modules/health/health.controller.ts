@@ -5,7 +5,7 @@ import {
   ApiTags,
   ApiProperty,
 } from '@nestjs/swagger';
-import { Public } from '@decorators/public.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { HealthService } from './health.service';
 
 /**

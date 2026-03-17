@@ -9,7 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PasswordService } from '@core/password.service';
+import { PasswordService } from '../../core/password.service';
 import { UserRole } from '../../generated/prisma/enums';
 import { Prisma } from '../../generated/prisma/client';
 

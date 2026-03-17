@@ -20,10 +20,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserRole } from '../../generated/prisma/enums';
-import { Roles } from '@decorators/roles.decorator';
-import { Public } from '@decorators/public.decorator';
-import { CurrentUser } from '@decorators/current-user.decorator';
-import type { IAuthenticatedUser } from '@interfaces/authenticated-user.interface';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import type { IAuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 
 @Controller('users')
 @ApiTags('Users')

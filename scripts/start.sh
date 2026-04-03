@@ -32,7 +32,17 @@ echo "Corriendo migraciones..."
 bunx prisma migrate deploy
 
 # ============================================================
-# 3. Iniciar aplicacion
+# 3. Seed opcional para desarrollo
+# ============================================================
+if [ "${SEED_DATABASE:-false}" = "true" ]; then
+  echo "SEED_DATABASE=true, ejecutando seed de Prisma..."
+  bunx prisma db seed
+else
+  echo "SEED_DATABASE=false, omitiendo seed"
+fi
+
+# ============================================================
+# 4. Iniciar aplicacion
 # ============================================================
 echo "Iniciando aplicacion..."
 exec bun dist/main.js

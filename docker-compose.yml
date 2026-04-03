@@ -13,7 +13,7 @@ services:
     ports:
       - '${DB_PORT:-5432}:5432'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-qrcode}']
       interval: 10s
@@ -82,6 +82,17 @@ services:
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-debug}
 
+      # Seed
+      SEED_DATABASE: ${SEED_DATABASE:-false}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@qrcodes.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin123!@#}
+      SEED_ADMIN_FIRST_NAME: ${SEED_ADMIN_FIRST_NAME:-Admin}
+      SEED_ADMIN_LAST_NAME: ${SEED_ADMIN_LAST_NAME:-User}
+      SEED_USER_EMAIL: ${SEED_USER_EMAIL:-user@qrcodes.local}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-User123!@#}
+      SEED_USER_FIRST_NAME: ${SEED_USER_FIRST_NAME:-Normal}
+      SEED_USER_LAST_NAME: ${SEED_USER_LAST_NAME:-User}
+
       # GeoIP
       GEOIP_DB_PATH: /app/data/geoip/GeoLite2-City.mmdb
     volumes:
@@ -140,7 +151,7 @@ services:
 
 volumes:
   postgres_data:
-    name: ${POSTGRES_VOLUME_NAME:-qrcodes_postgres_data}
+    name: ${POSTGRES_VOLUME_NAME:-qrcodes_postgres18_data}
     driver: local
   redis_data:
     name: ${REDIS_VOLUME_NAME:-qrcodes_redis_data}

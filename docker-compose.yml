@@ -75,9 +75,10 @@ services:
       JWT_REFRESH_TOKEN_EXPIRES_IN: ${JWT_REFRESH_TOKEN_EXPIRES_IN:-7d}
       # App
       NODE_ENV: production
-      PORT: ${PORT:-3000}
+      PORT: 3000
       APP_NAME: ${APP_NAME:-QR Code Generator}
       APP_VERSION: ${APP_VERSION:-1.0.0}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://localhost:3001,http://localhost:3000}
 
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-debug}
@@ -99,7 +100,7 @@ services:
       - geoip_data:/app/data/geoip:ro
     command: sh ./start.sh
     ports:
-      - '${PORT:-3000}:3000'
+      - '${APP_PORT:-3001}:3000'
     networks:
       - qr-network
     restart: unless-stopped

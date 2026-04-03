@@ -55,6 +55,7 @@ RUN addgroup --system --gid 1001 nestjs && \
 # Copy production node_modules and compiled output
 COPY --from=prod-deps --chown=nestjs:nestjs /app/node_modules ./node_modules
 COPY --from=builder --chown=nestjs:nestjs /app/dist ./dist
+COPY --from=builder --chown=nestjs:nestjs /app/src/generated ./src/generated
 COPY --from=builder --chown=nestjs:nestjs /app/prisma ./prisma
 COPY --from=builder --chown=nestjs:nestjs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nestjs:nestjs /app/package.json ./package.json

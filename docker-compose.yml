@@ -93,6 +93,7 @@ services:
       SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:-User123!@#}
       SEED_USER_FIRST_NAME: ${SEED_USER_FIRST_NAME:-Normal}
       SEED_USER_LAST_NAME: ${SEED_USER_LAST_NAME:-User}
+      SEED_DEFAULT_USER_PASSWORD: ${SEED_DEFAULT_USER_PASSWORD:-User123!@#}
 
       # GeoIP
       GEOIP_DB_PATH: /app/data/geoip/GeoLite2-City.mmdb
